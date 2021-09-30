@@ -1,0 +1,6 @@
+^scripts$
+^.*\.Rproj$
+^\.Rproj\.user$
+^doc$
+^Meta$
+^outputs$
