@@ -1,0 +1,16 @@
+citHeader("To cite 'medLDM' package in publications use:")
+
+citEntry(entry="Manual",
+         title = "Modelling spatio-temporal interactions between global change drivers in Mediterranean forest landscapes",
+         author = "Núria, Andrea, Quim, Ale, Tord, Lluís",
+         journal = "ESM",
+         year = "20XX",
+         textVersion =
+         paste("Aquilué, N., Duane, A., Canelles, Q., Morán-Ordónez, A., Snäll, T., Brotons, L. (20xx)",
+               "Modelling spatio-temporal interactions between global change drivers in Mediterranean forest landscapes",
+               "CJFR",
+               ", DOI nnnn",
+               sep=""),
+         )
+
+citFooter("Thank you for using 'medLDM'")
