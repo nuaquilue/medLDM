@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The **medLDM** package provides a set of functions to simulate landscape-scale processes that influence the composition and the arrangment of the landscape such as wildfires and land-cover changes, as well as the structure and composition of forest stands such as fire and forest management and vegetation dynamics.
+The **medLDM** package provides a set of functions to simulate landscape-scale processes that influence the composition and the arrangment of the landscape such as wildfires and land-cover changes, as well as the structure and composition of forest stands such as fire and forest management, and vegetation dynamics.
 
 The Mediterranean Landscape Dynamic Model is initialized for the region of Catalonia (NE Spain) in 2010, but includes a spin-up option to replicate most of the landscape-scale processes ocurred in the decade 2010-2020. It is a spatially explicit model currently calibrated to work at 1 ha of spatial resolution and 1-year time step.
 

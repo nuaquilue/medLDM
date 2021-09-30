@@ -37,7 +37,7 @@ fire.regime = function(land, coord, orography, clim, pfst.pwind, all.swc, clim.s
   for(swc in all.swc){
     
     ## Print SWC
-    cat(paste0("Fires in SWC: ", ifelse(swc==1, "Wind.", 
+    cat(paste0("Fires in SWC ", ifelse(swc==1, "Wind.", 
                                     ifelse(swc==2, "Heat.", 
                                         ifelse(swc==3, "Regular.", "Prescribed.")))))
     
@@ -87,7 +87,7 @@ fire.regime = function(land, coord, orography, clim, pfst.pwind, all.swc, clim.s
         area.target = pmax(0,params$pb.convenient.area*7-sum(params$accum.burnt.area))
       }
     }  
-    cat(paste(" Annual target area:", area.target), "\n")
+    cat(paste(" Annual target area:", area.target, "ha"), "\n")
       # print.maps = F
       # if(area.target>0 & write.maps)
       #   print.maps = T
@@ -290,7 +290,7 @@ fire.regime = function(land, coord, orography, clim, pfst.pwind, all.swc, clim.s
                              mutate(sr=wslope*slope+wwind*wind, fi=sr*fuel)
         sprd.rate.sources$pb = 1-exp(-facc*sprd.rate.sources$fi) + runif(nrow(sprd.rate.sources), -params$rpb, params$rpb)   
         sprd.rate = group_by(sprd.rate.sources, cell.id) %>% 
-                     summarize(fire.id=fire.id, spp=mean(spp), age=mean(age), fi=max(fi), 
+                     summarise(fire.id=fire.id, spp=mean(spp), age=mean(age), fi=max(fi), 
                                pb=max(pb), nsource=sum(position)) %>%
                      left_join(select(sprd.rate.sources, cell.id, pb, nsupp.sprd, nsupp.fuel), by=c("cell.id", "pb")) %>% 
                      mutate(nsupp.sprd=nsupp.sprd+(fi<=sprd.th), nsupp.fuel=nsupp.fuel+(spp<=14 & age<=fuel.th), 

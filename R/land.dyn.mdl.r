@@ -206,7 +206,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   
   ## Check the definition of the outputs writing sequence
   if(save.land){
-    if(is.na(out.seq)){
+    if(is.na(sum(out.seq))){
       out.seq = time.seq
     } 
     else{
@@ -295,7 +295,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
     land$tburnt = NA
     ## Initialize times burnt at 0 for burnable covers
     land$tburnt[land$spp<=17] = 0
-    land$interface = update.interface(land, orography)
+    land$interface = interface(land, orography)
     
     ## Land at time 0, at the initial stage
     aux.forest = filter(land, spp<=13) %>% select(spp, age, biom) %>% left_join(ba.vol, by="spp") %>% 
@@ -450,7 +450,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           stop("Error SQI shrub")
         }
         # Update interface values
-        land$interface = update.interface(land, orography)
+        land$interface = interface(land, orography)
       }
       
       
