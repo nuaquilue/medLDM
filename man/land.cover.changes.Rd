@@ -5,10 +5,11 @@
 \alias{land.cover.changes}
 \title{Land-cover changes}
 \format{
-A data frame with 3210899 rows and 2 variables:
+A data frame with as many rows as grid cells in the study area and 2 variables:
 \describe{
   \item{cell.id}{Unique grid cell indentificator}
-  \item{code}{Code made merging the land-cover code in 1993 to the land-cover code in 2017}
+  \item{code}{Code made by merging the 2-digits code of the land-cover type in 1993 
+  to the 2-digits code of the land-cover code in 2017. The 20-categories legend is as \code{landscape$spp}}
 }
 }
 \usage{

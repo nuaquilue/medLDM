@@ -5,7 +5,7 @@
 \alias{pfst.pwind}
 \title{Fire spread type and Main wind direction}
 \format{
-A data frame with 3210899 rows and 6 variables:
+A data frame with as many rows as grid cells in the study area and 6 variables:
 \describe{
   \item{cell.id}{Unique grid cell indentificator}
   \item{pfst.wind}{Fire spread type is wind-driven}

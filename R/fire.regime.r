@@ -3,7 +3,7 @@
 ###
 ######################################################################################
 
-fire.regime = function(land, coord, orography, clim, pfst.pwind, all.swc, clim.sever, t, 
+fire.regime = function(land, coord, orography, clim, all.swc, clim.sever, t, 
                         annual.burnt.area, out.path, irun, params){
   
   ## Function to select items not in a vector

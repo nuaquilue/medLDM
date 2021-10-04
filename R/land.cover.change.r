@@ -1,7 +1,23 @@
-######################################################################################
-###  Land cover changes
-###
-######################################################################################
+#' Land-cover changes
+#'
+#' Spatially allocation of land-cover transitions
+#' 
+#' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
+#' @param coord A data frame with yhe oordinates x and y in UTM31N-ETRS89 of the 1 ha cells in the study area
+#' @param lc.trans A number indicating the land-cover transition to simulate: 1 - urbanization, 2 - agriculture 
+#' conversion, and 3 - rural abandonment
+#' @param target.demand Area to be converted to the target land-cover (in ha)
+#' @param visit.cells Vector with the \code{cell.id} of already changed cells in the current time step
+#' 
+#' @return A vector with the \code{cell.id} of the colonized grassland areas
+#' 
+#' @export
+#' 
+#' @examples
+#' data(landscape)
+#' data(coord)
+#' land.cover.change(landscape, coord, 1, 10, numeric())
+#' 
 
 land.cover.change = function(land, coord, lc.trans, target.demand, visit.cells){
 

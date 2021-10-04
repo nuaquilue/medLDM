@@ -1,11 +1,35 @@
-sdm.sqi = function(land, orography, clim, decade=NA){
+#' Compute SDM and SQI for forest species 
+#'
+#' Computes the species distribution model (SDM) and the site quality index (SQI) of forest stands
+#' 
+#' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
+#' @param orography A data frame with the orographic characteristics of the study area
+#' @param clim A data frame with default minimum temperature (in ºC), maximum temperature (in ºC), 
+#' and precipitation (in mm) per location
+#' 
+#' @return A data frame with the binary SDM (0 or 1) and the categorical SQI (1-low, 2-high, 3-optimal) for
+#' each location in the study area identifed by \code{cell.id}
+#' 
+#' @export
+#' 
+#' @examples
+#' data(landscape)
+#' data(orography)
+#' data(clim)
+#' x = sdm.sqi(landscape, orography, clim)
+#' 
+
+sdm.sqi = function(land, orography, clim){
   
-  cat(paste("Assign sdm and sqi \n"))
+  cat(paste("Assign categorical SDM and SQI to forest stands\n"))
   
   ## Join land.cover.spp, aspect and slope data
   clim.sdm.sqi = clim %>% left_join(select(land, cell.id, spp), by="cell.id") %>% left_join(orography, by="cell.id")
   
   ## Assign SDM according to current spp distribution 
+  ## Oct-2021: It has to be replaced by SDM equations according to climatic variables
+  ## By now it reads the sdm data.frame and it is only load for the current climate conditions
+  ## that is, for decade = NA
   clim.sdm.sqi$sdm = NA
   clim.sdm.sqi$sdm[clim.sdm.sqi$spp==1] = sdm$sdm.phalepensis[clim.sdm.sqi$spp==1]
   clim.sdm.sqi$sdm[clim.sdm.sqi$spp==2] = sdm$sdm.pnigra[clim.sdm.sqi$spp==2]

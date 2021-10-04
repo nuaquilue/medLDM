@@ -5,7 +5,7 @@
 \alias{clim}
 \title{Reference climate}
 \format{
-A data frame with 3210899 rows and 4 variables:
+A data frame with as many rows as grid cells in the study area and 4 variables:
 \describe{
   \item{cell.id}{Unique grid cell indentificator}
   \item{tmin}{Historical (1971-2000) mean minimum temperature, in ºC}

@@ -15,7 +15,8 @@
 #' @param is.growth A flag to indicate that prescribed burns are simulated
 #' @param spin.up A flag to indicate if the observed 2010-2019 wildfires and land-cover changes are replicated
 #' @param custom.params List with the model paramaters and default and/or user-defined values 
-#' @param clim.proj A list of data frame with projections of climatic variables (minimum temperature, annual precipitation) for each \code{clim.step }
+#' @param clim.proj A list of data frames with projections of climatic variables 
+#' (minimum temperature, maximum temperature, and annual precipitation) for each \code{clim.step}
 #' @param nrun Number of replicates to run the model
 #' @param time.step Number of years of each time step
 #' @param time.step Number of years of each climatic period
@@ -199,8 +200,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
     fire.schedule = seq(11, time.horizon, time.step)
   }
   if(spin.up & time.horizon<=10){
-    lchg.schedule = 
-      fire.schedule = numeric()
+    lchg.schedule = fire.schedule = numeric()
   }
   clim.schedule = seq(1, time.horizon, clim.step*10) 
   
@@ -237,7 +237,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   if(!is.na(clim.proj)){
     # Check class of clim.proj
     if(!inherits(clim.proj, "data.frame") | !inherits(clim.proj, "list")) {
-      stop("'prec.proj' must be a named data frame or a list of data frames")
+      stop("'clim.proj' must be a named data frame or a list of data frames")
     }
     # Check that column names of the unique data frame provided are correct
     if(inherits(clim.proj, "data.frame")){
@@ -299,21 +299,21 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
     
     ## Land at time 0, at the initial stage
     aux.forest = filter(land, spp<=13) %>% select(spp, age, biom) %>% left_join(ba.vol, by="spp") %>% 
-                  mutate(vol=c_ba*biom/10+c2_ba*biom*biom/100) %>% select(-c_ba, -c2_ba) %>%
-                  left_join(ba.volbark, by="spp") %>% 
-                  mutate(volbark=c_ba*biom/10+c2_ba*biom*biom/100) %>% select(-c_ba, -c2_ba) %>% 
-                  left_join(ba.carbon, by="spp") %>%  mutate(carbon=c_ba*biom/10) %>% 
-                  mutate(age.class=ifelse(spp<=7 & age<=15, "young", ifelse(spp<=7 & age<=50, "mature",
-                         ifelse(spp<=7 & age>50, "old", ifelse(spp>7 & spp<=13 & age<=15, "young",
-                         ifelse(spp>7 & spp<=13 & age<=50, "mature", "old")))))) %>%       
-                  group_by(spp, age.class) %>% select(-c_ba) %>%
-                  summarise(area=length(vol), vol=sum(vol), volbark=sum(volbark), carbon=sum(carbon))  
+                 mutate(vol=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>%
+                 left_join(ba.volbark, by="spp") %>% 
+                 mutate(volbark=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>% 
+                 left_join(ba.carbon, by="spp") %>%  mutate(carbon=c_ba*biom) %>% 
+                 mutate(age.class=ifelse(spp<=7 & age<=15, "young", ifelse(spp<=7 & age<=50, "mature",
+                        ifelse(spp<=7 & age>50, "old", ifelse(spp>7 & spp<=13 & age<=15, "young",
+                        ifelse(spp>7 & spp<=13 & age<=50, "mature", "old")))))) %>%       
+                 group_by(spp, age.class) %>% select(-c_ba) %>%
+                 summarise(area=length(vol), vol=sum(vol), volbark=sum(volbark), carbon=sum(carbon))  
     aux.shrub = filter(land, spp==14) %>% select(spp, biom) %>% group_by(spp) %>%
-                 summarise(age.class=NA, area=length(biom), vol=sum(biom), volbark=0, carbon=0)  
+                summarise(age.class=NA, area=length(biom), vol=sum(biom), volbark=0, carbon=0)  
     aux.other = filter(land, spp>14) %>% select(spp) %>% group_by(spp) %>%
-                 summarise(age.class=NA, area=length(spp), vol=0, volbark=0, carbon=0)  
+                summarise(age.class=NA, area=length(spp), vol=0, volbark=0, carbon=0)  
     track.land = rbind(track.land, data.frame(run=irun, year=0, aux.forest), data.frame(run=irun, year=0, aux.shrub),
-                         data.frame(run=irun, year=0, aux.other))
+                       data.frame(run=irun, year=0, aux.other))
   
     
     ## Simulation of one time step
@@ -321,16 +321,15 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## Print replicate and time step
       cat(paste0("Replicate ", irun, "/", nrun, " - time: ", t, "/", time.horizon), "\n")
-      
-      ## Compute decade
-      decade = (1+floor((t-1)/10))*10
   
       ## 1. CLIMATE CHANGE  
       if(!is.climate.change & t==1){
-        land = land %>% left_join(sdm.sqi(land, orography, clim, decade=NA), by="cell.id")
+        land = land %>% left_join(sdm.sqi(land, orography, clim), by="cell.id")
       }
       else if(is.climate.change & t %in% clim.schedule){
-        land = land %>% left_join(sdm.sqi(land, orography, clim, decade=decade), by="cell.id")
+        period = which(clim.schedule == t) 
+        clim = clim.proj[[period]]
+        land = land %>% left_join(sdm.sqi(land, orography, clim), by="cell.id")
       }
       
       
@@ -397,18 +396,19 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
           stop("Error SQI shrub")
         }
-        
+        # Update interface values
+        land$interface = interface(land, orography)
       }
       if(is.land.cover.change & t %in% lchg.schedule){
         # Urbanization
         chg.cells = land.cover.change(land, coord, 1, lchg.demand$lct.urban[t], numeric())
         land$spp[land$cell.id %in% chg.cells] = clim$spp[clim$cell.id %in% chg.cells] = 20 # urban
         land$typdist[land$cell.id %in% chg.cells] = "lchg.urb"
-        land$biom[land$cell.id %in% chg.cells] = 
-        land$age[land$cell.id %in% chg.cells] = 
-        land$tsdist[land$cell.id %in% chg.cells] =   # don't care the time since it's urban
-        land$tburnt[land$cell.id %in% chg.cells] =
-        land$sdm[clim$cell.id %in% chg.cells] = 
+        land$biom[land$cell.id %in% chg.cells] = NA
+        land$age[land$cell.id %in% chg.cells] = NA
+        land$tsdist[land$cell.id %in% chg.cells] = NA   # don't care the time since it's urban
+        land$tburnt[land$cell.id %in% chg.cells] = NA
+        land$sdm[clim$cell.id %in% chg.cells] = NA 
         land$sqi[clim$cell.id %in% chg.cells] = NA
         # Agriculture conversion
         visit.cells = chg.cells
@@ -417,18 +417,18 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$typdist[land$cell.id %in% chg.cells] = "lchg.agri"
         land$tsdist[land$cell.id %in% chg.cells] = 0
         land$tburnt[land$cell.id %in% chg.cells] = 0
-        land$biom[land$cell.id %in% chg.cells] = 
-        land$age[land$cell.id %in% chg.cells] = 
-        land$sdm[clim$cell.id %in% chg.cells] = 
+        land$biom[land$cell.id %in% chg.cells] = NA
+        land$age[land$cell.id %in% chg.cells] = NA
+        land$sdm[clim$cell.id %in% chg.cells] = NA
         land$sqi[clim$cell.id %in% chg.cells] = NA
         # Rural abandonment
         visit.cells = c(visit.cells, chg.cells)
         chg.cells = land.cover.change(land, coord, 3, lchg.demand$lct.rabn[t], visit.cells)
         land$spp[land$cell.id %in% chg.cells] = clim$spp[clim$cell.id %in% chg.cells] = 14  # shrub
         land$typdist[land$cell.id %in% chg.cells] = "lchg.rabn"
-        land$biom[land$cell.id %in% chg.cells] = 
-        land$age[land$cell.id %in% chg.cells] = 
-        land$tsdist[land$cell.id %in% chg.cells] = 
+        land$biom[land$cell.id %in% chg.cells] = 0
+        land$age[land$cell.id %in% chg.cells] = 0
+        land$tsdist[land$cell.id %in% chg.cells] = 0
         land$tburnt[land$cell.id %in% chg.cells] = 0
         land$sdm[clim$cell.id %in% chg.cells] = 1
         sqi.shrub = filter(clim, cell.id %in% chg.cells) %>% select(spp, tmin, precip) %>% 
@@ -456,7 +456,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 3. FOREST MANAGEMENT 
       if(is.harvest & t %in% mgmt.schedule){
-        cut.out = forest.mgmt(land, harvest, clim, harvest.demand$sawlog[t], harvest.demand$wood[t])
+        cut.out = forest.mgmt(land, clim, harvest, harvest.demand$sawlog[t], harvest.demand$wood[t])
         extracted.sawlog = cut.out$extracted.sawlog
         if(nrow(extracted.sawlog)>0){
           extracted.sawlog = extracted.sawlog[order(extracted.sawlog$cell.id, decreasing=F),]
@@ -467,8 +467,8 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         }
         # report the cells that have been cut
         land$typdist[land$cell.id %in% c(extracted.sawlog$cell.id, extracted.wood$cell.id)] = "cut"
-        land$tsdist[land$cell.id %in% c(extracted.sawlog$cell.id, extracted.wood$cell.id)] = 
-          land$tscut[land$cell.id %in% c(extracted.sawlog$cell.id, extracted.wood$cell.id)] = 0
+        land$tsdist[land$cell.id %in% c(extracted.sawlog$cell.id, extracted.wood$cell.id)] = 0
+        land$tscut[land$cell.id %in% c(extracted.sawlog$cell.id, extracted.wood$cell.id)] = 0
         # report the type of intervention (e.g. thinning, prep.cut, seed.cut, removal.cut)
         land$typcut[land$cell.id %in% extracted.sawlog$cell.id] = extracted.sawlog$todo
         land$typcut[land$cell.id %in% extracted.wood$cell.id] = extracted.wood$todo
@@ -481,9 +481,9 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$age[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$pctg.extract == 100]] = 0 # quercus, conif plantation and other.tress are clear cut
         # change the basal area in harvested stands
         land$biom[land$cell.id %in% extracted.sawlog$cell.id] = 
-          land$biom[land$cell.id %in% extracted.sawlog$cell.id]-extracted.sawlog$ba.extract*10
+          land$biom[land$cell.id %in% extracted.sawlog$cell.id]-extracted.sawlog$ba.extract
         land$biom[land$cell.id %in% extracted.wood$cell.id] = 
-          land$biom[land$cell.id %in% extracted.wood$cell.id]-extracted.wood$ba.extract*10
+          land$biom[land$cell.id %in% extracted.wood$cell.id]-extracted.wood$ba.extract
         # after removal.cut make explicity that basal area is 0
         land$biom[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$todo=="removal.cut"]] = 0
         land$biom[land$cell.id %in% extracted.wood$cell.id[extracted.wood$todo=="removal.cut"]] = 0
@@ -491,7 +491,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         if(sum(extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100)>0){
           for(i in 1:9)
             land$biom[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100]] = 
-              growth(land[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100],], clim, paste("Cohort age", i))
+              growth(land[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100],], clim, paste("Cohort", i))
         }
         
         # track the vol extracted per each spp
@@ -508,7 +508,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                               group_by(aux, spp) %>% summarise(vol.sawlog=round(sum(vol.sawlog),1), vol.wood=round(sum(vol.wood),1))))
         
         ## track the harvestable areas, the sustinably harvestable areas
-        track.forest.area = rbind(track.forest.area, data.frame(run=irun, year=t, forest.areas(land, harvest)))
+        track.forest.area = rbind(track.forest.area, data.frame(run=irun, year=t, .forest.areas(land, harvest)))
         
         ## track the area and volume extracted per product and forest type
         cut.out$suit.mgmt$ftype = ifelse(cut.out$suit.mgmt$spp<=7, "conif", "decid")
@@ -548,7 +548,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         if(runif(1,0,100) < climatic.severity[climatic.severity$year==t, ncol(climatic.severity)]) # not-mild
           clim.sever = 1
         # Burnt
-        fire.out = fire.regime(land, coord, orography, clim, pfst.pwind, 1:3, clim.sever, t, 0, out.path, irun, params)
+        fire.out = fire.regime(land, coord, orography, clim, 1:3, clim.sever, t, 0, out.path, irun, params)
         # Track fires and Burnt spp & Biomass
         if(nrow(fire.out[[1]])>0)
           track.fire = rbind(track.fire, data.frame(run=irun, fire.out[[1]]))
@@ -556,7 +556,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         if(nrow(burnt.cells)>0){
           aux = left_join(burnt.cells, select(land, cell.id, spp, biom), by="cell.id") %>%
             mutate(bburnt=ifelse(fintensity>params$fire.intens.th, biom, biom*(1-fintensity))) %>%
-            group_by(fire.id, spp) %>% summarize(aburnt=length(spp), bburnt=round(sum(bburnt, na.rm=T),1))
+            group_by(fire.id, spp) %>% summarise(aburnt=length(spp), bburnt=round(sum(bburnt, na.rm=T),1))
           track.fire.spp =  rbind(track.fire.spp, data.frame(run=irun, year=t, aux)) 
           # track.step = rbind(track.step, data.frame(run=irun, fire.out[[3]]))
           # track.sr = rbind(track.sr, data.frame(run=irun, fire.out[[3]]))
@@ -599,6 +599,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       ## 6. DROUGHT
       killed.cells = integer()
       if(is.drought & t %in% drought.schedule){
+        decade = (1+floor((t-1)/10))*10 ## Compute decade
         killed.cells = drought(land, decade, t)
         land$tsdist[land$cell.id %in% killed.cells] = 0
         land$typdist[land$cell.id %in% killed.cells] = "drght"
@@ -637,7 +638,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 8. COHORT ESTABLISHMENT
       if(is.cohort.establish & t %in% cohort.schedule & length(killed.cells)>0){
-        aux = cohort.establish(land, coord, orography, sdm, params)
+        aux = cohort.establish(land, coord, orography, clim, params)
         spp.out = land$spp[land$cell.id %in% killed.cells]
         land$spp[land$cell.id %in% killed.cells] = aux$spp
         land$age[land$cell.id %in% killed.cells] = t-(decade-10)-1 ## 0 to 9, so after growth(), age is 1 to 10
@@ -657,7 +658,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 9. AFFORESTATION
       if(is.afforestation & t %in% afforest.schedule){
-        aux  = afforestation(land, coord, orography, clim, sdm, params)
+        aux  = afforestation(land, coord, orography, clim, params)
         if(length(aux)>0){
           land$spp[land$cell.id %in% aux$cell.id] = aux$spp
           land$biom[land$cell.id %in% aux$cell.id] = 0
@@ -689,16 +690,16 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 11. GROWTH
       if(is.growth & t %in% growth.schedule){
-        land$biom = growth(land, clim, "Species")
+        land$biom = growth(land, clim, "Stand")
         land$age = pmin(land$age+1,600)
         land$tsdist = pmin(land$tsdist+1,600)
         land$tscut = pmin(land$tscut+1,600)
         aux.forest = filter(land, spp<=13) %>% select(spp, age, biom) %>% left_join(ba.vol, by="spp") %>% 
-                     mutate(vol=c_ba*biom/10+c2_ba*biom*biom/100) %>% select(-c_ba, -c2_ba) %>%
+                     mutate(vol=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>%
                      left_join(ba.volbark, by="spp") %>% 
-                     mutate(volbark=c_ba*biom/10+c2_ba*biom*biom/100) %>% select(-c_ba, -c2_ba) %>% 
+                     mutate(volbark=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>% 
                      left_join(ba.carbon, by="spp") %>% 
-                     mutate(carbon=c_ba*biom/10) %>% 
+                     mutate(carbon=c_ba*biom) %>% 
                      mutate(age.class=ifelse(spp<=7 & age<=15, "young", ifelse(spp<=7 & age<=50, "mature",
                                          ifelse(spp<=7 & age>50, "old", ifelse(spp>7 & spp<=13 & age<=15, "young",
                                               ifelse(spp>7 & spp<=13 & age<=50, "mature", "old")))))) %>%       
@@ -712,9 +713,9 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                             data.frame(run=irun, year=t, aux.other))
         aux.forest = filter(land, spp<=13) %>% select(cell.id, spp, age, biom, sqi) %>% 
                      left_join(ba.vol, by="spp") %>% 
-                     mutate(vol=c_ba*biom/10+c2_ba*biom*biom/100) %>% select(-c_ba, -c2_ba) %>%
+                     mutate(vol=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>%
                      left_join(ba.volbark, by="spp") %>% 
-                     mutate(volbark=c_ba*biom/10+c2_ba*biom*biom/100) %>% select(-c_ba, -c2_ba) %>% 
+                     mutate(volbark=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>% 
                      group_by(spp, sqi) %>% summarise(area=length(vol), vol=sum(vol), volbark=sum(volbark))
         track.sqi = rbind(track.sqi, data.frame(run=irun, year=t, aux.forest)) 
       }

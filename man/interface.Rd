@@ -12,7 +12,8 @@ interface(land, orography)
 \item{orography}{A data frame with the orographic characteristics of the study area}
 }
 \value{
-A vector with the code interface of all locations in the study area
+A vector with the code interface of all locations in the study area (1 - urban, 2 - cropland, 3 - natural areas, 4 - other, 
+5 - urban & cropland, 6 - urban & natural areas, and 7 - cropland & natural areas)
 }
 \description{
 Determines the land interface of each location
@@ -20,6 +21,6 @@ Determines the land interface of each location
 \examples{
 data(landscape)
 data(orography)
-afforestation(landscape, coord, orography, clim, sdm)
+x = interface(landscape, orography)
 
 }

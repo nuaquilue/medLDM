@@ -5,7 +5,7 @@
 \alias{wildfires}
 \title{Wildfires}
 \format{
-A data frame with 3210899 rows and 11 variables:
+A data frame with as many rows as grid cells in the study area and 11 variables:
 \describe{
   \item{cell.id}{Unique grid cell indentificator}
   \item{y10}{Locations burnt in 2010}
@@ -24,6 +24,6 @@ A data frame with 3210899 rows and 11 variables:
 wildfires
 }
 \description{
-Observed wildfires in Catalonia from 2010 to 2019
+Observed wildfires in a region of Catalonia from 2010 to 2019
 }
 \keyword{datasets}

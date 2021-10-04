@@ -5,7 +5,7 @@
 \alias{coord}
 \title{UTM coordinates}
 \format{
-A data frame with 3210899 rows and 3 variables:
+A data frame with as many rows as grid cells in the study area and 3 variables:
 \describe{
   \item{cell.id}{Unique grid cell indentificator}
   \item{x}{UTM coordinate X}

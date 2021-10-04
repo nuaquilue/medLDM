@@ -5,13 +5,13 @@
 \alias{orography}
 \title{Orography}
 \format{
-A data frame with 3210899 rows and 8 variables:
+A data frame with as many rows as grid cells in the study area and 8 variables:
 \describe{
   \item{cell.id}{Unique grid cell indentificator}
   \item{elev}{Elevation, in m}
   \item{aspect}{Aspect, 0 - flat, 1 - north, 2 - east, 3 - south, 4 - west}
   \item{slope}{Slope, in º}
-  \item{radsol}{Solar radiation in summer, in J?}
+  \item{radsol}{Solar radiation in summer, in kJ/(m2·day·mm)}
   \item{road}{Distance to the road network, in m}
   \item{utm}{Code of the 1K UTM grid}
   \item{slope.stand}{Standarized slope?}

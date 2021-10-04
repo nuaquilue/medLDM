@@ -49,7 +49,8 @@ land.dyn.mdl(
 
 \item{custom.params}{List with the model paramaters and default and/or user-defined values}
 
-\item{clim.proj}{A list of data frame with projections of climatic variables (minimum temperature, annual precipitation) for each \code{clim.step }}
+\item{clim.proj}{A list of data frames with projections of climatic variables 
+(minimum temperature, maximum temperature, and annual precipitation) for each \code{clim.step}}
 
 \item{nrun}{Number of replicates to run the model}
 
