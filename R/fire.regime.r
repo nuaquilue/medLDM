@@ -78,7 +78,7 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
       ## Fixed
       if(sum(climatic.severity[climatic.severity$year==step,2:4])>0){  
         is.aba.fix = T
-        area.target = min(200000-(annual.aburnt+annual.asupp), climatic.severity[climatic.severity$year==t, iswc+1])
+        area.target = pmin(200000-(annual.aburnt+annual.asupp), climatic.severity[climatic.severity$year==t, iswc+1])
       }
       ## Find stochastic annual burnt area
       else{ 
@@ -90,11 +90,11 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
             clim.sever = 2
         }
         # maximum annual area target is 200.000 ha (for the three SWC together)
-        area.target = round(min(200000-(annual.aburnt+annual.asupp), 
-                             max(10,rlnorm(1, burnt.area.dist$meanlog[burnt.area.dist$clim==clim.sever & burnt.area.dist$swc==iswc],
+        area.target = round(pmin(200000-(annual.aburnt+annual.asupp), 
+                            pmax(10,rlnorm(1, burnt.area.dist$meanlog[burnt.area.dist$clim==clim.sever & burnt.area.dist$swc==iswc],
                                               burnt.area.dist$sdlog[burnt.area.dist$clim==clim.sever & burnt.area.dist$swc==iswc])))) 
         if(iswc==3) # but SWC regular max is 20.000 ha
-          area.target = min(area.target, 20000)  
+          area.target = pmin(area.target, 20000)  
       }  
     }
     ## Find annual target area for prescribed burns
@@ -118,7 +118,6 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
         ignition.mdl$road*orography$road/100  ## road/100 it's ok
     ## Assign NA to non-burnable covers
     z[land$spp>17] <- NA
-    cat(mean(z, na.rm=T))
     pigni = data.frame(cell.id=land$cell.id, p=(1/(1+exp(-1*z)))*100)
     pigni = mutate(pigni, psft=p*pfst.pwind[,ifelse(iswc==1,1,2)+1]) %>%
             filter(cell.id %in% subland$cell.id)
@@ -434,7 +433,7 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
       } # while 'fire.size.target'
       
       ## Write info about this fire
-      track.fire = rbind(track.fire, data.frame(year=t, swc=iswc, clim.sever, fire.id, fst=fire.spread.type, 
+      track.fire = rbind(track.fire, data.frame(year=step, swc=iswc, clim.sever, fire.id, fst=fire.spread.type, 
                                                  wind=fire.wind, atarget=fire.size.target, aburnt.highintens, 
                                                  aburnt.lowintens, asupp.fuel, asupp.sprd))
       # cat(paste(" - aBurnt:", aburnt.lowintens+aburnt.highintens, "- aSupp:", asupp.sprd+asupp.fuel), "\n")
