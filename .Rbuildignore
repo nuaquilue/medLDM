@@ -1,6 +1,10 @@
-^scripts$
-^.*\.Rproj$
 ^\.Rproj\.user$
-^doc$
+^data_medLDM$
 ^Meta$
 ^outputs$
+^scripts$
+^.*\.Rproj$
+
+
+
+

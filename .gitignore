@@ -8,3 +8,4 @@ src/*.dll
 outputs
 scripts
 vignettes
+data_medLDM
