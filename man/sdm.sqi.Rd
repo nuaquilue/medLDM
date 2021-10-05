@@ -4,12 +4,10 @@
 \alias{sdm.sqi}
 \title{Compute SDM and SQI for forest species}
 \usage{
-sdm.sqi(land, orography, clim)
+sdm.sqi(land, clim)
 }
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records and land-cover types in rows}
-
-\item{orography}{A data frame with the orographic characteristics of the study area}
 
 \item{clim}{A data frame with default minimum temperature (in ºC), maximum temperature (in ºC), 
 and precipitation (in mm) per location}
@@ -23,8 +21,7 @@ Computes the species distribution model (SDM) and the site quality index (SQI) o
 }
 \examples{
 data(landscape)
-data(orography)
 data(clim)
-x = sdm.sqi(landscape, orography, clim)
+x = sdm.sqi(landscape, clim)
 
 }

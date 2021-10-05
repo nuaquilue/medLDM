@@ -9,7 +9,8 @@ growth(land, clim, who = "")
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records and land-cover types in rows}
 
-\item{clim}{A data frame with minimum temperature (in ºC), maximum temperature (in ºC), and precipitation (in mm) per location}
+\item{clim}{A data frame with minimum temperature (in ºC), maximum temperature (in ºC), 
+and precipitation (in mm) per location}
 
 \item{who}{String to display to what type of communitites is growing}
 }

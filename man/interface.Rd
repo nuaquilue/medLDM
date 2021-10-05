@@ -4,23 +4,21 @@
 \alias{interface}
 \title{Land interfaces}
 \usage{
-interface(land, orography)
+interface(land)
 }
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records and land-cover types in rows}
-
-\item{orography}{A data frame with the orographic characteristics of the study area}
 }
 \value{
-A vector with the code interface of all locations in the study area (1 - urban, 2 - cropland, 3 - natural areas, 4 - other, 
-5 - urban & cropland, 6 - urban & natural areas, and 7 - cropland & natural areas)
+A vector with the code interface of all locations in the study area: 
+1 - urban, 2 - cropland, 3 - natural areas, 4 - other, 
+5 - urban & cropland, 6 - urban & natural areas, and 7 - cropland & natural areas
 }
 \description{
 Determines the land interface of each location
 }
 \examples{
 data(landscape)
-data(orography)
-x = interface(landscape, orography)
+x = interface(landscape)
 
 }

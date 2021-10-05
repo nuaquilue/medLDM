@@ -4,22 +4,13 @@
 \alias{forest.mgmt}
 \title{Forest management}
 \usage{
-forest.mgmt(
-  land,
-  clim,
-  harvest,
-  demand.sawlog = 0,
-  demand.wood = 0,
-  policy = "BAU"
-)
+forest.mgmt(land, clim, demand.sawlog = 0, demand.wood = 0, policy = "BAU")
 }
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records and land-cover types in rows}
 
 \item{clim}{A data frame with minimum temperature (in ºC), maximum temperature (in ºC), 
 and precipitation (in mm) per location}
-
-\item{harvest}{A \code{harvest} data frame with landscape variables driving the allocation of sylvicultural prescriptions}
 
 \item{policy}{A string indicating which regional policy is adopted to allocate the timber demands}
 
@@ -37,9 +28,8 @@ Spatially allocation of sawlog and wood for energy demand according to a  land-c
 data(landscape)
 data(clim)
 data(orography)
-data(harvest)
 land = landscape \%>\% mutate(typcut = NA, tscut  = NA, tburnt = NA)
 land = land \%>\% left_join(sdm.sqi(land, orography, clim), by="cell.id")
-forest.mgmt(land, clim, harvest, 100, 80)
+forest.mgmt(land, clim, 100, 80)
 
 }

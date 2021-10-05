@@ -4,14 +4,14 @@
 \alias{drought}
 \title{Drought mortality}
 \usage{
-drought(land, decade, t)
+drought(land, decade, step)
 }
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records and land-cover types in rows}
 
 \item{decade}{A number indicating the decade of the current time step}
 
-\item{t}{The time step}
+\item{step}{The curretn time step}
 }
 \value{
 A vector with the \code{cell.id} of the killed locations
@@ -21,6 +21,6 @@ Determines the dieback of forest areas due to drought-induced mortatlidy
 }
 \examples{
 data(landscape)
-drought(landscape, decade=10, t=1)
+drought(landscape, decade=10, step=1)
 
 }

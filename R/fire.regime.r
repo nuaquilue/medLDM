@@ -48,8 +48,8 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
   ## Start with the 12 neigbours of the ignition
   ## Wind direction is coded as 0-N, 45-NE, 90-E, 135-SE, 180-S, 225-SW, 270-W, 315-NE
   default.neigh = data.frame(x=c(-1,1,2900,-2900,2899,-2901,2901,-2899),
-                              windir=c(270,90,180,0,225,315,135,45),
-                              dist=c(100,100,100,100,141.421,141.421,141.421,141.421))
+                             windir=c(270,90,180,0,225,315,135,45),
+                             dist=c(100,100,100,100,141.421,141.421,141.421,141.421))
   default.nneigh = nrow(default.neigh)
   
   ## Choose target area per each swc and burn it
@@ -67,7 +67,8 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
       i = land$spp<=17        # 2.938.560
     else
       i = land$spp<=15        # 1.937.915
-    subland = land[i,1:4]  # cell.id, spp, biom, and age   
+    subland = land[i,]
+    subland = select(subland, cell.id, spp, biom, age)
     suborography = orography[i,1:2]  # cell.id & elev
     source.supp = data.frame(cell.id=subland$cell.id, nsupp.sprd=0, nsupp.fuel=0)
     
@@ -117,6 +118,7 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
         ignition.mdl$road*orography$road/100  ## road/100 it's ok
     ## Assign NA to non-burnable covers
     z[land$spp>17] <- NA
+    cat(mean(z, na.rm=T))
     pigni = data.frame(cell.id=land$cell.id, p=(1/(1+exp(-1*z)))*100)
     pigni = mutate(pigni, psft=p*pfst.pwind[,ifelse(iswc==1,1,2)+1]) %>%
             filter(cell.id %in% subland$cell.id)

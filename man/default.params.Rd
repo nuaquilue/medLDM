@@ -11,7 +11,8 @@ A list with the following items:
  \itemize{
    \item{\code{species}: Vector with the name of the tree species (sorted as codified in the \code{landscape} data frame)}
    \item{\code{spp.distrib.rad}: Radius of the neighborhood (in pixels) to find out if a species is present in a region}
-   \item{\code{colon.rad}: Radius of the neighborhood (in pixels) to look for mature tree species ready to colonize shrubs or locations killed by drought}
+   \item{\code{colon.rad}: Radius of the neighborhood (in pixels) to look for mature tree species ready to colonize shrubs
+    or locations killed by drought}
    \item{\code{rpb}: Spread rate}
    \item{\code{pb.upper.th}: If spread rate is above this threshold, the cell always burns}
    \item{\code{pb.lower.th}: If spread rate is below this threshold, the cell never burns}

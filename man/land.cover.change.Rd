@@ -4,12 +4,10 @@
 \alias{land.cover.change}
 \title{Land-cover changes}
 \usage{
-land.cover.change(land, coord, lc.trans, target.demand, visit.cells)
+land.cover.change(land, lc.trans, target.demand, visit.cells)
 }
 \arguments{
 \item{land}{A \code{landscape} data frame with forest stand records and land-cover types in rows}
-
-\item{coord}{A data frame with yhe oordinates x and y in UTM31N-ETRS89 of the 1 ha cells in the study area}
 
 \item{lc.trans}{A number indicating the land-cover transition to simulate: 1 - urbanization, 2 - agriculture 
 conversion, and 3 - rural abandonment}
