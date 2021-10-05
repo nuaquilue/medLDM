@@ -5,7 +5,6 @@
 #' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
 #' @param clim A data frame with minimum temperature (in ºC), maximum temperature (in ºC), 
 #' and precipitation (in mm) per location
-#' @param harvest A \code{harvest} data frame with landscape variables driving the allocation of sylvicultural prescriptions
 #' @param sawlog.demand Sawlog volume to be harvested (in m3)
 #' @param wood.demand Wood for energy volume to be harvested (in m3)
 #' @param policy A string indicating which regional policy is adopted to allocate the timber demands
@@ -18,13 +17,12 @@
 #' data(landscape)
 #' data(clim)
 #' data(orography)
-#' data(harvest)
 #' land = landscape %>% mutate(typcut = NA, tscut  = NA, tburnt = NA)
 #' land = land %>% left_join(sdm.sqi(land, orography, clim), by="cell.id")
-#' forest.mgmt(land, clim, harvest, 100, 80)
+#' forest.mgmt(land, clim, 100, 80)
 #' 
 
-forest.mgmt = function(land, clim, harvest, demand.sawlog=0, demand.wood=0, policy="BAU"){
+forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU"){
   
   ## Tracking
   cat("Forest Management", "\n")

@@ -3,7 +3,8 @@
 #' Growht of basal area of forest stands and biomass of shrublands
 #' 
 #' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
-#' @param clim A data frame with minimum temperature (in ºC), maximum temperature (in ºC), and precipitation (in mm) per location
+#' @param clim A data frame with minimum temperature (in ºC), maximum temperature (in ºC), 
+#' and precipitation (in mm) per location
 #' @param who String to display to what type of communitites is growing 
 #' 
 #' @return A vector with the new basal area or biomass for forest stands or shrublands, respectively

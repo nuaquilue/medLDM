@@ -264,16 +264,15 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   ## Initialize tracking data.frames
   track.harvested = data.frame(run=NA, year=NA, spp=NA, vol.sawlog=NA, vol.wood=NA)
   track.forest.area = data.frame(run=NA, year=NA, forest=NA, spp.harvestable=NA, non.protect=NA,
-                                  national.park=NA, enpe=NA, no.park=NA, slope30.nopark=NA, 
-                                  slope30.nopark.distpath1.5=NA, slope30.nopark.distpath2.2=NA)
+                                 national.park=NA, enpe=NA, no.park=NA, slope30.nopark=NA, 
+                                 slope30.nopark.distpath1.5=NA, slope30.nopark.distpath2.2=NA)
   track.ftype.area = data.frame(run=NA, year=NA, todo=NA, ftype=NA, ha=NA)
   track.ftype.volume = data.frame(run=NA, year=NA, ftype=NA, vol.potential.extract.sawlog=NA, vol.potential.extract.wood=NA,
-                             vol.extract.sawlog=NA, vol.extract.wood=NA, pct.sawlog=NA, pct.wood=NA) 
+                                  vol.extract.sawlog=NA, vol.extract.wood=NA, pct.sawlog=NA, pct.wood=NA) 
   track.fire = data.frame(run=NA, year=NA, swc=NA, clim.sever=NA, fire.id=NA, fst=NA, wind=NA, atarget=NA, 
-                           aburnt.highintens=NA, aburnt.lowintens=NA, asupp.fuel=NA, asupp.sprd=NA, rem=NA)
+                          aburnt.highintens=NA, aburnt.lowintens=NA, asupp.fuel=NA, asupp.sprd=NA, rem=NA)
   track.fire.spp = data.frame(run=NA, year=NA, fire.id=NA, spp=NA, aburnt=NA, bburnt=NA)
-  track.pb = data.frame(run=NA, year=NA, clim.sever=NA, fire.id=NA, 
-                         wind=NA, atarget=NA, aburnt.lowintens=NA)
+  track.pb = data.frame(run=NA, year=NA, clim.sever=NA, fire.id=NA, wind=NA, atarget=NA, aburnt.lowintens=NA)
   track.drought = data.frame(run=NA, year=NA, spp=NA, ha=NA)
   track.cohort = data.frame(run=NA, year=NA, spp.out=NA, spp.in=NA, ha=NA)
   track.post.fire = data.frame(run=NA, year=NA, spp.out=NA, spp.in=NA, ha=NA)
@@ -295,7 +294,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
     land$tburnt = NA
     ## Initialize times burnt at 0 for burnable covers
     land$tburnt[land$spp<=17] = 0
-    land$interface = interface(land, orography)
+    land$interface = interface(land)
     
     ## Land at time 0, at the initial stage
     aux.forest = filter(land, spp<=13) %>% select(spp, age, biom) %>% left_join(ba.vol, by="spp") %>% 
@@ -324,12 +323,12 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   
       ## 1. CLIMATE CHANGE  
       if(!is.climate.change & t==1){
-        land = land %>% left_join(sdm.sqi(land, orography, clim), by="cell.id")
+        land = land %>% left_join(sdm.sqi(land, clim), by="cell.id")
       }
       else if(is.climate.change & t %in% clim.schedule){
         period = which(clim.schedule == t) 
         clim = clim.proj[[period]]
-        land = land %>% left_join(sdm.sqi(land, orography, clim), by="cell.id")
+        land = land %>% left_join(sdm.sqi(land, clim), by="cell.id")
       }
       
       
@@ -397,11 +396,11 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           stop("Error SQI shrub")
         }
         # Update interface values
-        land$interface = interface(land, orography)
+        land$interface = interface(land)
       }
       if(is.land.cover.change & t %in% lchg.schedule){
         # Urbanization
-        chg.cells = land.cover.change(land, coord, 1, lchg.demand$lct.urban[t], numeric())
+        chg.cells = land.cover.change(land, 1, lchg.demand$lct.urban[t], numeric())
         land$spp[land$cell.id %in% chg.cells] = clim$spp[clim$cell.id %in% chg.cells] = 20 # urban
         land$typdist[land$cell.id %in% chg.cells] = "lchg.urb"
         land$biom[land$cell.id %in% chg.cells] = NA
@@ -450,13 +449,13 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           stop("Error SQI shrub")
         }
         # Update interface values
-        land$interface = interface(land, orography)
+        land$interface = interface(land)
       }
       
       
       ## 3. FOREST MANAGEMENT 
       if(is.harvest & t %in% mgmt.schedule){
-        cut.out = forest.mgmt(land, clim, harvest, harvest.demand$sawlog[t], harvest.demand$wood[t])
+        cut.out = forest.mgmt(land, clim, harvest.demand$sawlog[t], harvest.demand$wood[t])
         extracted.sawlog = cut.out$extracted.sawlog
         if(nrow(extracted.sawlog)>0){
           extracted.sawlog = extracted.sawlog[order(extracted.sawlog$cell.id, decreasing=F),]
@@ -548,7 +547,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         if(runif(1,0,100) < climatic.severity[climatic.severity$year==t, ncol(climatic.severity)]) # not-mild
           clim.sever = 1
         # Burnt
-        fire.out = fire.regime(land, coord, orography, clim, 1:3, clim.sever, t, 0, out.path, irun, params)
+        fire.out = fire.regime(land, clim, params, 1:3, clim.sever, annual.burnt.area=0, step=t)
         # Track fires and Burnt spp & Biomass
         if(nrow(fire.out[[1]])>0)
           track.fire = rbind(track.fire, data.frame(run=irun, fire.out[[1]]))
@@ -583,7 +582,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           clim.sever = 0
         # Annual area burnt for PB
         annual.burnt.area = ifelse(exists("burnt.cells"), nrow(burnt.cells), 0)
-        fire.out = fire.regime(land, coord, orography, clim, pfst.pwind, 4, clim.sever, t, 0, out.path, irun, params)
+        fire.out = fire.regime(land, clim, params, swc=4, clim.sever, annual.burnt.area=0, step=t)
         # Track pb and Done with prescribed burns!
         if(nrow(fire.out[[1]])>0){
           track.pb = rbind(track.pb, data.frame(run=irun, fire.out[[1]][,c(1,3,4,6,7,9)]))
@@ -612,7 +611,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       ## 7. POST-FIRE REGENERATION
       if(is.postfire & t %in% post.fire.schedule & length(burnt.cells)>0){
         ## forest transition of tree species burnt in high intensity
-        aux  = post.fire(land, coord, orography, clim, sdm, params)
+        aux  = post.fire(land, clim, params)
         if(nrow(aux)>0){
           spp.out = land$spp[land$cell.id %in% aux$cell.id]
           land$spp[land$cell.id %in% aux$cell.id] = aux$spp
@@ -638,7 +637,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 8. COHORT ESTABLISHMENT
       if(is.cohort.establish & t %in% cohort.schedule & length(killed.cells)>0){
-        aux = cohort.establish(land, coord, orography, clim, params)
+        aux = cohort.establish(land, clim, params)
         spp.out = land$spp[land$cell.id %in% killed.cells]
         land$spp[land$cell.id %in% killed.cells] = aux$spp
         land$age[land$cell.id %in% killed.cells] = t-(decade-10)-1 ## 0 to 9, so after growth(), age is 1 to 10
@@ -658,7 +657,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 9. AFFORESTATION
       if(is.afforestation & t %in% afforest.schedule){
-        aux  = afforestation(land, coord, orography, clim, params)
+        aux  = afforestation(land, clim, params)
         if(length(aux)>0){
           land$spp[land$cell.id %in% aux$cell.id] = aux$spp
           land$biom[land$cell.id %in% aux$cell.id] = 0
@@ -676,7 +675,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       
       ## 10. ENCROACHMENT
       if(is.encroachment & t %in% encroach.schedule){
-        aux  = encroachment(land, coord, orography)
+        aux  = encroachment(land)
         land$spp[land$cell.id %in% aux$cell.id] = 14
         land$biom[land$cell.id %in% aux$cell.id] = 0
         land$age[land$cell.id %in% aux$cell.id] = 0

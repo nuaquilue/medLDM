@@ -4,7 +4,7 @@
 #' 
 #' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
 #' @param decade A number indicating the decade of the current time step
-#' @param t The time step
+#' @param step The curretn time step
 #' 
 #' @return A vector with the \code{cell.id} of the killed locations 
 #' 
@@ -12,15 +12,15 @@
 #' 
 #' @examples
 #' data(landscape)
-#' drought(landscape, decade=10, t=1)
+#' drought(landscape, decade=10, step=1)
 #' 
 
-drought <- function(land, decade, t){
+drought <- function(land, decade, step){
   
   ## Count how many ha to kill, totally and this time step
   ## Those forest species out of its climatic range and not burnt the current time step
   to.kill <- land %>% filter(spp<=13, sdm==0, tsdist>0)
-  nkill <- round(table(to.kill$spp) / (10 - (t-1 - (decade-10)) ) )
+  nkill <- round(table(to.kill$spp) / (10 - (step-1 - (decade-10)) ) )
   
   ## Tracking
   if(sum(nkill)>0)

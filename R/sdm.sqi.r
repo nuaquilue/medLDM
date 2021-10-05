@@ -3,7 +3,6 @@
 #' Computes the species distribution model (SDM) and the site quality index (SQI) of forest stands
 #' 
 #' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
-#' @param orography A data frame with the orographic characteristics of the study area
 #' @param clim A data frame with default minimum temperature (in ºC), maximum temperature (in ºC), 
 #' and precipitation (in mm) per location
 #' 
@@ -14,12 +13,11 @@
 #' 
 #' @examples
 #' data(landscape)
-#' data(orography)
 #' data(clim)
-#' x = sdm.sqi(landscape, orography, clim)
+#' x = sdm.sqi(landscape, clim)
 #' 
 
-sdm.sqi = function(land, orography, clim){
+sdm.sqi = function(land, clim){
   
   cat(paste("Assign categorical SDM and SQI to forest stands\n"))
   
