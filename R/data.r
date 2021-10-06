@@ -42,7 +42,7 @@
 #' 
 "harvest"
 
-#' Land-cover changes 
+#' 1993 - 2017 Land-cover changes 
 #'
 #' Codification of the land-cover changes occurred between 1993 and 2017 based on the 
 #' 20-categories legend of the Land Cover Map of Catalonia
@@ -53,7 +53,7 @@
 #'   \item{code}{Code made by merging the 2-digits code of the land-cover type in 1993 
 #'   to the 2-digits code of the land-cover code in 2017. The 20-categories legend is as \code{landscape$spp}}
 #' }
-"land.cover.changes"
+"obs.lcc"
 
 #' Forest landscape features of a region in Catalonia
 #'

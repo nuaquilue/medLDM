@@ -359,23 +359,23 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       if(spin.up & t<=10){
         cat("Observed land-cover changes", "\n")
         ## Select the cells 
-        set1 = unlist(filter(land.cover.changes, code==1420) %>% select(cell.id))
-        set2 = unlist(filter(land.cover.changes, code==1520) %>% select(cell.id))
-        set3 = unlist(filter(land.cover.changes, code==1620) %>% select(cell.id))
+        set1 = unlist(filter(obs.lcc, code==1420) %>% select(cell.id))
+        set2 = unlist(filter(obs.lcc, code==1520) %>% select(cell.id))
+        set3 = unlist(filter(obs.lcc, code==1620) %>% select(cell.id))
         urban.cells = c(sample(set1, min(length(set1), 189), replace=F),
                         sample(set2, min(length(set2), 4), replace=F),
                         sample(set3, min(length(set3), 516), replace=F))
-        set1 = unlist(filter(land.cover.changes, code==1419) %>% select(cell.id))
-        set2 = unlist(filter(land.cover.changes, code==1519) %>% select(cell.id))
-        set3 = unlist(filter(land.cover.changes, code==1619) %>% select(cell.id))
+        set1 = unlist(filter(obs.lcc, code==1419) %>% select(cell.id))
+        set2 = unlist(filter(obs.lcc, code==1519) %>% select(cell.id))
+        set3 = unlist(filter(obs.lcc, code==1619) %>% select(cell.id))
         water.cells = c(sample(set1, min(length(set1), 220), replace=F),
                         sample(set2, min(length(set2), 71), replace=F),
                         sample(set3, min(length(set3), 501), replace=F))
-        set1 = unlist(filter(land.cover.changes, code==1415) %>% select(cell.id))
-        set2 = unlist(filter(land.cover.changes, code==1615) %>% select(cell.id))
+        set1 = unlist(filter(obs.lcc, code==1415) %>% select(cell.id))
+        set2 = unlist(filter(obs.lcc, code==1615) %>% select(cell.id))
         grass.cells = c(sample(set1, min(length(set1), 84), replace=F),
                         sample(set2, min(length(set2), 119), replace=F))
-        set1 = unlist(filter(land.cover.changes, code==1614) %>% select(cell.id))
+        set1 = unlist(filter(obs.lcc, code==1614) %>% select(cell.id))
         shrub.cells = sample(set1, min(length(set1), 6340), replace=F)
         ## Apply the changes in "land" and "clim
         land$spp[land$cell.id %in% urban.cells] = clim$spp[clim$cell.id %in% urban.cells] = 20 
@@ -409,10 +409,10 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           clim$sqi[clim$cell.id %in% shrub.cells] = sqi.shrub$sqi
         }
         ## Change in the base dataframe, to not repeat
-        land.cover.changes$code[land.cover.changes$cell.id %in% urban.cells] = 2020
-        land.cover.changes$code[land.cover.changes$cell.id %in% water.cells] = 1919
-        land.cover.changes$code[land.cover.changes$cell.id %in% grass.cells] = 1515
-        land.cover.changes$code[land.cover.changes$cell.id %in% shrub.cells] = 1414
+        obs.lcc$code[obs.lcc$cell.id %in% urban.cells] = 2020
+        obs.lcc$code[obs.lcc$cell.id %in% water.cells] = 1919
+        obs.lcc$code[obs.lcc$cell.id %in% grass.cells] = 1515
+        obs.lcc$code[obs.lcc$cell.id %in% shrub.cells] = 1414
         
         if(any(is.infinite(sqi.shrub$sq.brolla)) | any(is.na(sqi.shrub$sq.brolla))){
           write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
