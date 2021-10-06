@@ -5,8 +5,8 @@
 #' @param land A \code{landscape} data frame with forest stand records and land-cover types in rows
 #' @param clim A data frame with minimum temperature (in ºC), maximum temperature (in ºC), 
 #' and precipitation (in mm) per location
-#' @param sawlog.demand Sawlog volume to be harvested (in m3)
-#' @param wood.demand Wood for energy volume to be harvested (in m3)
+#' @param demand.sawlog Sawlog volume to be harvested (in m3)
+#' @param demand.wood Wood for energy volume to be harvested (in m3)
 #' @param policy A string indicating which regional policy is adopted to allocate the timber demands
 #' 
 #' @return Data frames still to be polished (under development)!
@@ -17,9 +17,9 @@
 #' data(landscape)
 #' data(clim)
 #' data(orography)
-#' land = landscape %>% mutate(typcut = NA, tscut  = NA, tburnt = NA)
-#' land = land %>% left_join(sdm.sqi(land, orography, clim), by="cell.id")
-#' forest.mgmt(land, clim, 100, 80)
+#' land = dplyr::mutate(landscape, typcut = NA, tscut  = NA, tburnt = NA)
+#' land = dplyr::left_join(land, sdm.sqi(landscape, clim), by="cell.id")
+#' res = forest.mgmt(land, clim, 100, 80)
 #' 
 
 forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU"){
@@ -184,9 +184,9 @@ forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU")
   # w1 = 0.25; w2 = 0.25; w3 = 0.005; w4 =0.1; w5 = 0.4-w3
   w1 = 0.275; w2 = 0.25; w3 = 0.005; w4 = 0.075; w5 = 0.4-w3
   sustain = left_join(sustain, neigh.id, by=c("cell.id"="source.id")) %>% 
-            mutate(f1=scales::rescale(pmin(vol.extract.sawlog, quantile(vol.extract.sawlog, p=0.9)), to=c(0,1)) ,
-                   f2=scales::rescale(pmin(vol.neigh, quantile(vol.neigh, p=0.9)), to=c(0,1)) ,
-                   f3=scales::rescale(pmin(1/dist.industry, quantile(1/dist.industry, p=0.9)), to=c(0,1)),
+            mutate(f1=rescale(pmin(vol.extract.sawlog, quantile(vol.extract.sawlog, p=0.9)), to=c(0,1)) ,
+                   f2=rescale(pmin(vol.neigh, quantile(vol.neigh, p=0.9)), to=c(0,1)) ,
+                   f3=rescale(pmin(1/dist.industry, quantile(1/dist.industry, p=0.9)), to=c(0,1)),
                    f4=ifelse(spp<=7,1,0)) %>% 
             mutate(p=w1*f1+w2*f2+w3*f3+w4*f4+w5*psuit)
 

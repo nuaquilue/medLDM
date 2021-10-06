@@ -15,7 +15,8 @@
 #' @examples
 #' data(landscape)
 #' data(coord)
-#' land.cover.change(landscape, coord, 1, 10, numeric())
+#' land = interface(landscape)
+#' land.cover.change(land, 1, 10, numeric())
 #' 
 
 land.cover.change = function(land, lc.trans, target.demand, visit.cells){

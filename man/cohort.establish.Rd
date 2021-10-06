@@ -23,7 +23,7 @@ Determines the tree species after forest dieback
 \examples{
 data(landscape)
 data(clim)
-land = landscape \%>\% left_join(sdm.sqi(landscape, clim), by="cell.id")
+land = dplyr::left_join(landscape, sdm.sqi(landscape, clim), by="cell.id")
 killed.cells = drought(land, 10, 1)
 land$tsdist[land$cell.id \%in\% killed.cells] = 0
 land$typdist[land$cell.id \%in\% killed.cells] = "drght"

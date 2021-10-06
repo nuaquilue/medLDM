@@ -91,8 +91,6 @@
 #'   \code{cut} for timber harvesting, \code{pb} for prescribed burn, \code{drght} for drought-induced mortality,
 #'   \code{afforest} for afforestation, and \code{encroach} for encroachment}
 #'   \item{tsdist}{Time since the last disturbance, in years}
-#'   \item{x}{Interface code: 1 - urban, 2 - cropland, 3 - natural areas, 4 - other, 
-#'   5 - urban & cropland, 6 - urban & natural areas, and 7 - cropland & natural areas}
 #' }
 "landscape"
 
@@ -140,7 +138,7 @@
 #' }
 "pfst.pwind"
 
-#' Wildfires 
+#' 2010 - 2019 Wildfires 
 #'
 #' Observed wildfires in a region of Catalonia from 2010 to 2019
 #'

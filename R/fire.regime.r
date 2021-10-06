@@ -11,6 +11,7 @@
 #' @param clim.sever Climatic severity of the year: 0 - mild, 1 - severe
 #' @param annual.burnt.area The total burnt area in the current time stepA string indicating which regional policy is adopted to allocate the timber demands
 #' @param step Integer indicating the current time step
+#' @param out.path String with the directory path to save log files
 #' 
 #' @return A list of two objects: A data frame with target, burnt and suppressed areas per fire, and 
 #' a data frame with fire identificator, step of spreading, fire intensity and whether it is ignition (TRUE or FALSE) 
@@ -22,11 +23,13 @@
 #' data(landscape)
 #' data(clim)
 #' params = default.params()
+#' land = landscape
+#' land$interface = interface(landscape)
 #' # Simulate wildfires under Wind synoptic weather conditions for a climatic mild year
-#' fire.regime(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1)
+#' fire.regime(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1, out.path=tempdir())
 #' 
 
-fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1){
+fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1, out.path){
   
   ## Function to select items not in a vector
   `%notin%` = Negate(`%in%`)

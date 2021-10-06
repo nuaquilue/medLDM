@@ -23,6 +23,7 @@ Growht of basal area of forest stands and biomass of shrublands
 \examples{
 data(landscape)
 data(clim)
-growth(landscape, clim)
+land = dplyr::left_join(landscape, sdm.sqi(landscape, clim), by="cell.id")
+res = growth(land, clim)
 
 }

@@ -11,7 +11,8 @@ fire.regime(
   swc = 1,
   clim.sever = 0,
   annual.burnt.area = 0,
-  step = 1
+  step = 1,
+  out.path
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ and precipitation (in mm) per location}
 \item{annual.burnt.area}{The total burnt area in the current time stepA string indicating which regional policy is adopted to allocate the timber demands}
 
 \item{step}{Integer indicating the current time step}
+
+\item{out.path}{String with the directory path to save log files}
 }
 \value{
 A list of two objects: A data frame with target, burnt and suppressed areas per fire, and 
@@ -43,7 +46,9 @@ Wildfires under a synoptic weather condition or prescribed burns
 data(landscape)
 data(clim)
 params = default.params()
+land = landscape
+land$interface = interface(landscape)
 # Simulate wildfires under Wind synoptic weather conditions for a climatic mild year
-fire.regime(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1)
+fire.regime(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1, out.path=tempdir())
 
 }

@@ -18,6 +18,9 @@
 #' @importFrom RANN nn2
 #' @useDynLib medLDM
 #' @importFrom Rcpp sourceCpp evalCpp
+#' @importFrom stats aggregate dist quantile rexp rlnorm runif
+#' @importFrom utils write.table
+#' @importFrom scales rescale
 NULL
 #> NULL
 

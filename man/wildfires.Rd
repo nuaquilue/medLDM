@@ -3,7 +3,7 @@
 \docType{data}
 \name{wildfires}
 \alias{wildfires}
-\title{Wildfires}
+\title{2010 - 2019 Wildfires}
 \format{
 A data frame with as many rows as grid cells in the study area and 11 variables:
 \describe{

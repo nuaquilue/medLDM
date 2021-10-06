@@ -24,6 +24,7 @@ Determines the shrub locations colonized by tree species
 data(landscape)
 data(clim)
 params = default.params()
-afforestation(landscape, clim, params)
+land = dplyr::left_join(landscape, sdm.sqi(landscape, clim), by="cell.id")
+afforestation(land, clim, params)
 
 }

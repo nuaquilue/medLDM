@@ -1,12 +1,12 @@
-#' The medLDM 
+#' Mediterranean Landscape Dynamic Model m
 #'
 #' Run the Mediterranean Landscape Dynamic Model medLDM that includes the processes of land-cover changes
 #' wilfires, prescribed burns, fire suppression, timber and wood harvesting and vegetation dynamics.
 #'
 #' @param is.land.cover.change A flag to indicate that land cover changes are simulated
 #' @param is.harvest A flag to indicate that harvesting for sawlogs and wood is simulated
-#' @param is.widlfire A flag to indicate that wildfires are simualted
-#' @param is.prescribed.burnt A flag to indicate that prescribed burns are simulated
+#' @param is.wildfire A flag to indicate that wildfires are simualted
+#' @param is.prescribed.burn A flag to indicate that prescribed burns are simulated
 #' @param is.drought A flag to indicate that prescribed burns are simulated
 #' @param is.postfire A flag to indicate that prescribed burns are simulated
 #' @param is.cohort.establish A flag to indicate that prescribed burns are simulated
@@ -16,10 +16,10 @@
 #' @param spin.up A flag to indicate if the observed 2010-2019 wildfires and land-cover changes are replicated
 #' @param custom.params List with the model paramaters and default and/or user-defined values 
 #' @param clim.proj A list of data frames with projections of climatic variables 
-#' (minimum temperature, maximum temperature, and annual precipitation) for each \code{clim.step}
+#' (minimum temperature (in ºC), maximum temperature (in ºC), and annual precipitation (in mm)) for each \code{clim.step}
 #' @param nrun Number of replicates to run the model
 #' @param time.step Number of years of each time step
-#' @param time.step Number of years of each climatic period
+#' @param clim.step Number of years of each climatic period
 #' @param time.horizon Number of years of the model simulation, it has to be a multiple \code{time.step}
 #' @param save.land A flag to save as a RDS file the \code{landscape} data frame at the time step indicated in \code{out.seq}
 #' @param out.seq Numeric vector with the time steps the \code{landscape} is saved
@@ -196,7 +196,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                         is.cohort.establish = TRUE, is.afforestation = TRUE, is.encroachment = TRUE, 
                         is.growth = TRUE, spin.up = TRUE, custom.params = NA, clim.proj = NA, 
                         nrun = 1, time.step = 1, clim.step = 10, time.horizon = 90, save.land = FALSE, 
-                        out.seq = NA, out.path = NA, ...){
+                        out.seq = NA, out.path = NA){
   
   options(dplyr.summarise.inform=F)
   `%notin%` = Negate(`%in%`)
@@ -570,7 +570,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         if(runif(1,0,100) < climatic.severity[climatic.severity$year==t, ncol(climatic.severity)]) # not-mild
           clim.sever = 1
         # Burnt
-        fire.out = fire.regime(land, clim, params, 1:3, clim.sever, annual.burnt.area=0, step=t)
+        fire.out = fire.regime(land, clim, params, 1:3, clim.sever, annual.burnt.area=0, step=t, out.path=out.path)
         # Track fires and Burnt spp & Biomass
         if(nrow(fire.out[[1]])>0)
           track.fire = rbind(track.fire, data.frame(run=irun, fire.out[[1]]))

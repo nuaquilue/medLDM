@@ -2,7 +2,7 @@
 % Please edit documentation in R/land.dyn.mdl.r
 \name{land.dyn.mdl}
 \alias{land.dyn.mdl}
-\title{The medLDM}
+\title{Mediterranean Landscape Dynamic Model m}
 \usage{
 land.dyn.mdl(
   is.land.cover.change = FALSE,
@@ -24,14 +24,17 @@ land.dyn.mdl(
   time.horizon = 90,
   save.land = FALSE,
   out.seq = NA,
-  out.path = NA,
-  ...
+  out.path = NA
 )
 }
 \arguments{
 \item{is.land.cover.change}{A flag to indicate that land cover changes are simulated}
 
 \item{is.harvest}{A flag to indicate that harvesting for sawlogs and wood is simulated}
+
+\item{is.wildfire}{A flag to indicate that wildfires are simualted}
+
+\item{is.prescribed.burn}{A flag to indicate that prescribed burns are simulated}
 
 \item{is.drought}{A flag to indicate that prescribed burns are simulated}
 
@@ -50,11 +53,13 @@ land.dyn.mdl(
 \item{custom.params}{List with the model paramaters and default and/or user-defined values}
 
 \item{clim.proj}{A list of data frames with projections of climatic variables 
-(minimum temperature, maximum temperature, and annual precipitation) for each \code{clim.step}}
+(minimum temperature (in ºC), maximum temperature (in ºC), and annual precipitation (in mm)) for each \code{clim.step}}
 
 \item{nrun}{Number of replicates to run the model}
 
-\item{time.step}{Number of years of each climatic period}
+\item{time.step}{Number of years of each time step}
+
+\item{clim.step}{Number of years of each climatic period}
 
 \item{time.horizon}{Number of years of the model simulation, it has to be a multiple \code{time.step}}
 
@@ -63,10 +68,6 @@ land.dyn.mdl(
 \item{out.seq}{Numeric vector with the time steps the \code{landscape} is saved}
 
 \item{out.path}{String with the directory path to save the \code{landscape} data frame at each time step indicated in \code{out.seq}}
-
-\item{is.widlfire}{A flag to indicate that wildfires are simualted}
-
-\item{is.prescribed.burnt}{A flag to indicate that prescribed burns are simulated}
 }
 \value{
 A list with the following 13 items:

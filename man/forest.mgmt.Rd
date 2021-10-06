@@ -12,11 +12,11 @@ forest.mgmt(land, clim, demand.sawlog = 0, demand.wood = 0, policy = "BAU")
 \item{clim}{A data frame with minimum temperature (in ºC), maximum temperature (in ºC), 
 and precipitation (in mm) per location}
 
+\item{demand.sawlog}{Sawlog volume to be harvested (in m3)}
+
+\item{demand.wood}{Wood for energy volume to be harvested (in m3)}
+
 \item{policy}{A string indicating which regional policy is adopted to allocate the timber demands}
-
-\item{sawlog.demand}{Sawlog volume to be harvested (in m3)}
-
-\item{wood.demand}{Wood for energy volume to be harvested (in m3)}
 }
 \value{
 Data frames still to be polished (under development)!
@@ -28,8 +28,8 @@ Spatially allocation of sawlog and wood for energy demand according to a  land-c
 data(landscape)
 data(clim)
 data(orography)
-land = landscape \%>\% mutate(typcut = NA, tscut  = NA, tburnt = NA)
-land = land \%>\% left_join(sdm.sqi(land, orography, clim), by="cell.id")
-forest.mgmt(land, clim, 100, 80)
+land = dplyr::mutate(landscape, typcut = NA, tscut  = NA, tburnt = NA)
+land = dplyr::left_join(land, sdm.sqi(landscape, clim), by="cell.id")
+res = forest.mgmt(land, clim, 100, 80)
 
 }

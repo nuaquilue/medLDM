@@ -22,7 +22,8 @@ Imports:
     RANN,
     tidyr,
     dplyr,
-    Rcpp
+    Rcpp,
+	scales
 Suggests: 
     knitr,
     ggplot2,
