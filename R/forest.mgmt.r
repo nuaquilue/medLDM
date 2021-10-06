@@ -45,7 +45,7 @@ forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU")
                                pextract=NA, pwood=NA, vol.sawlog=NA, vol.wood=NA, ba.extract=NA)
   
   ## 8-neighbors neighbourhood used to compute the volume around each target cell
-  default.neigh = data.frame(x=c(-1,1,ncol(mask),-ncol(mask))) #,2899,-2901,2901,-2899))
+  default.neigh = data.frame(x=c(-1,1,ncol(mask.study.area),-ncol(mask.study.area))) #,2899,-2901,2901,-2899))
   default.nneigh = nrow(default.neigh)
   
   ## To be sure that non-harvestable covers are cut (no-forest and qsuber, not managed for sawlogs neither wood)
@@ -166,12 +166,9 @@ forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU")
   ## ?thinnigs donen algo per sawlogs??
   sustain$vol.extract.wood = sustain$vol.extract - sustain$vol.extract.sawlog
   
-  ## Adjust sawlog and wood demand
-  # group_by(sustain, spp) %>% summarise(vol.saw=sum(vol.extract.sawlog), vol.wood=sum(vol.extract.wood))
+  ## Adjust sawlog demand
   demand.sawlog = min(demand.sawlog, sum(sustain$vol.extract.sawlog))
-  demand.wood = min(demand.wood, sum(sustain$vol.extract.wood))
-  
-  
+
   ## Give a priority rank to those cells that can be sustainably harvested
   ## Set probability of sawlog extraction according to (1) volume available for sawlog extraction, 
   ## (2) volume available for sawlog extraction in the neighborhood, (3) distance to forest industries, and
@@ -199,18 +196,24 @@ forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU")
   extracted.sawlog = filter(sustain, vol.extract.sawlog>0)
   extracted.sawlog = extracted.sawlog[order(extracted.sawlog$p, decreasing=T),]
   cumulative.vol = cumsum(extracted.sawlog$vol.extract.sawlog)
-  extracted.sawlog = extracted.sawlog[1:which(cumulative.vol>demand.sawlog)[1],]
+  if(demand.sawlog < cumulative.vol[length(cumulative.vol)])
+    extracted.sawlog = extracted.sawlog[1:which(cumulative.vol>demand.sawlog)[1],]
   
   ## Count how much has been extracted of sawlogs and wood
   total.vol.extracted.sawlog = sum(sustain$vol.extract.sawlog[sustain$cell.id %in% extracted.sawlog$cell.id])
   total.vol.extracted.wood = sum(sustain$vol.extract.wood[sustain$cell.id %in% extracted.sawlog$cell.id])
   
+  ## Adjust wood demand
+  demand.wood = min(demand.wood-total.vol.extracted.wood, sum(sustain$vol.extract.wood[sustain$spp %in% c(8,10,11)]))
+  demand.wood = max(demand.wood, 0)
+  
   ## If there's still wood to extract, extract from Quercus 
-  if(total.vol.extracted.wood<demand.wood){
+  if(demand.wood>0){
     extracted.wood = filter(sustain, spp %in% c(8,10,11))
     extracted.wood = extracted.wood[order(extracted.wood$p, decreasing=T),]
     cumulative.vol = cumsum(extracted.wood$vol.extract.sawlog+extracted.wood$vol.extract.wood) # both volums go to wood
-    extracted.wood = extracted.wood[1:which(cumulative.vol>demand.wood)[1],]
+    if(demand.wood < cumulative.vol[length(cumulative.vol)])
+      extracted.wood = extracted.wood[1:which(cumulative.vol>demand.wood)[1],]
   }
 
   return(list(suit.mgmt=suit.mgmt, sustain=sustain, extracted.sawlog=extracted.sawlog, extracted.wood=extracted.wood))

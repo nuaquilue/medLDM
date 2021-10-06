@@ -64,7 +64,9 @@ cohort.establish = function(land, clim, params){
                                           select(killed.cells, X1:X14), 1, .select.cohort))
   
   ## Join climatic and orographic variables to compute sq and then sqi
-  new.cohort = new.cohort %>% left_join(clim, by = "cell.id") %>% left_join(orography, by = "cell.id") %>%
+  new.cohort = new.cohort %>% left_join(clim, by = "cell.id") %>% left_join(orography, by = "cell.id") %>% 
+               mutate(spp=spp.x) %>% select(-spp.x, -spp.y) %>% 
+  
                left_join(sq.tree, by = "spp") %>% left_join(sq.index, by = "spp") %>% 
                mutate(aux = c0+c_mnan*tmin+c2_mnan*tmin*tmin+c_plan*precip+c2_plan*precip*precip+
                       c_aspect*ifelse(aspect!=1,0,1)+c_slope*slope.stand) %>%

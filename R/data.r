@@ -106,7 +106,7 @@
 #' The unique grid cell identificator \code{cell.id} in the \code{landscape} data frame coincides with 
 #' the position of the location in the \code{mask} raster.
 #' }
-"mask"
+"mask.study.area"
 
 #' Orography 
 #'

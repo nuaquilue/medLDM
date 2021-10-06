@@ -47,7 +47,9 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
   
   ## Start with the 12 neigbours of the ignition
   ## Wind direction is coded as 0-N, 45-NE, 90-E, 135-SE, 180-S, 225-SW, 270-W, 315-NE
-  default.neigh = data.frame(x=c(-1,1,2900,-2900,2899,-2901,2901,-2899),
+  default.neigh = data.frame(x=c(-1,1,ncol(mask.study.area),-ncol(mask.study.area),
+                                 ncol(mask.study.area)-1,-ncol(mask.study.area)-1,
+                                 ncol(mask.study.area)+1,ncol(mask.study.area)-1),
                              windir=c(270,90,180,0,225,315,135,45),
                              dist=c(100,100,100,100,141.421,141.421,141.421,141.421))
   default.nneigh = nrow(default.neigh)
