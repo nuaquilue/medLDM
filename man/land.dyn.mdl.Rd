@@ -24,7 +24,8 @@ land.dyn.mdl(
   time.horizon = 90,
   save.land = FALSE,
   out.seq = NA,
-  out.path = NA
+  out.path = NA,
+  ...
 )
 }
 \arguments{
@@ -68,6 +69,8 @@ land.dyn.mdl(
 \item{out.seq}{Numeric vector with the time steps the \code{landscape} is saved}
 
 \item{out.path}{String with the directory path to save the \code{landscape} data frame at each time step indicated in \code{out.seq}}
+
+\item{...}{Other parameters of the function}
 }
 \value{
 A list with the following 13 items:

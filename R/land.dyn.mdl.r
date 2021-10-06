@@ -24,6 +24,7 @@
 #' @param save.land A flag to save as a RDS file the \code{landscape} data frame at the time step indicated in \code{out.seq}
 #' @param out.seq Numeric vector with the time steps the \code{landscape} is saved
 #' @param out.path String with the directory path to save the \code{landscape} data frame at each time step indicated in \code{out.seq}
+#' @param ... Other parameters of the function
 #'
 #' @return A list with the following 13 items:
 #'  \itemize{
@@ -190,13 +191,12 @@
 #' }
 #'
 
-
 land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wildfire = FALSE, 
                         is.prescribed.burn = FALSE, is.drought = TRUE, is.postfire = TRUE, 
                         is.cohort.establish = TRUE, is.afforestation = TRUE, is.encroachment = TRUE, 
                         is.growth = TRUE, spin.up = TRUE, custom.params = NA, clim.proj = NA, 
                         nrun = 1, time.step = 1, clim.step = 10, time.horizon = 90, save.land = FALSE, 
-                        out.seq = NA, out.path = NA){
+                        out.seq = NA, out.path = NA, ...){
   
   options(dplyr.summarise.inform=F)
   `%notin%` = Negate(`%in%`)
