@@ -778,7 +778,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
     res = c(res, list(Drought = track.drought[-1,]))
   }
   if(is.cohort.establish){
-    track.cohort = filter(track.cohort, ha>0)    
+    track.cohort = filter(track.cohort, area>0)    
     res = c(res, list(Cohort = track.cohort[-1,]))
   }
   if(is.afforestation){

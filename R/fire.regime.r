@@ -94,7 +94,8 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
           if(runif(1,0,100) <= prob.extrem) # extreme
             clim.sever = 2
         }
-        # maximum annual area target is 200.000 ha (for the three SWC together)
+        # maximum annual area target is 200.000 ha (for the three SWC together) for all Catalonia
+        # do it proportional to the side of the study area
         area.target = round(pmin(200000-(annual.aburnt+annual.asupp), 
                             pmax(10,rlnorm(1, burnt.area.dist$meanlog[burnt.area.dist$clim==clim.sever & burnt.area.dist$swc==iswc],
                                               burnt.area.dist$sdlog[burnt.area.dist$clim==clim.sever & burnt.area.dist$swc==iswc])))) 
