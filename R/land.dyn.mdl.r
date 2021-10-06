@@ -57,8 +57,8 @@
 #'         \item{\code{run}: Number of replicate.}
 #'         \item{\code{year}: Year YYYY.}
 #'         \item{\code{spp}: Code of the species.}
-#'         \item{\code{vol}: Harvested timber volume for sawlog in \eqn{m^{3}}.}
-#'         \item{\code{vol}: Harvested timber volume for wood in \eqn{m^{3}}.}         
+#'         \item{\code{vol.sawlog}: Harvested timber volume for sawlog in \eqn{m^{3}}.}
+#'         \item{\code{vol.wood}: Harvested timber volume for wood in \eqn{m^{3}}.}         
 #'       }
 #'    }
 #'    \item{\code{ForestArea}: A data frame of areas for sustainable timber harvesting
@@ -72,11 +72,9 @@
 #'         \item{\code{national.park}: Harvestable area in a national park.}
 #'         \item{\code{enpe}: Harvestable area protected, but not in a national park.}
 #'         \item{\code{no.park}: Harvestable area not in a national park.}
-#'         \item{\code{slope30.nopark}: Harvestable area not in a national park with slope <= 30%.}
-#'         \item{\code{slope30.nopark.distpath1.5}: Harvestable area not in a national park with slope <= 30% 
-#'         and distance to roads or forest tracks <= 1.5 km.}
-#'         \item{\code{slope30.nopark.distpath2.2}: Harvestable area not in a national park with slope <= 30% 
-#'         and distance to roads or forest tracks <= 2.2 km.}
+#'         \item{\code{slope30.nopark}: Harvestable area not in a national park with slope <= 30 pct.}
+#'         \item{\code{slope30.nopark.distpath1.5}: Harvestable area not in a national park with slope <= 30 pct and distance to roads or forest tracks <= 1.5 km.}
+#'         \item{\code{slope30.nopark.distpath2.2}: Harvestable area not in a national park with slope <= 30 pct and distance to roads or forest tracks <= 2.2 km.}
 #'       }
 #'    }
 #'    \item{\code{HarvestArea}: A data frame of area harvested per sylvicultural prescription and forest type    
@@ -95,12 +93,12 @@
 #'         \item{\code{run}: Number of replicate.}
 #'         \item{\code{year}: Year YYYY.}
 #'         \item{\code{fytpe}: Forest type: conif or decid.}
-#'         \item{\code{vol.potential.extract.sawlog}: Potential harvesting volume for sawlog in \eqn{m^{3}}.}         
-#'         \item{\code{vol.potential.extract.wood}: Potential harvesting volume for Wood in \eqn{m^{3}}.}         
-#'         \item{\code{vol.extract.sawlog}: Harvested volume for sawlog in \eqn{m^{3}}.}         
-#'         \item{\code{vol.extract.wood}: Harvested volume for wood in \eqn{m^{3}}.}         
+#'         \item{\code{vol.potential.extract.sawlog}: Potential harvesting volume for sawlog in \eqn{m^{3}}.}
+#'         \item{\code{vol.potential.extract.wood}: Potential harvesting volume for Wood in \eqn{m^{3}}.}     
+#'         \item{\code{vol.extract.sawlog}: Harvested volume for sawlog in \eqn{m^{3}}.}
+#'         \item{\code{vol.extract.wood}: Harvested volume for wood in \eqn{m^{3}}.}
 #'         \item{\code{pct.sawlog}: Percentage of harvested volume for sawlog.}
-#'         \item{\code{pct.wood}: Percentage of harvested volume for wood.}                  
+#'         \item{\code{pct.wood}: Percentage of harvested volume for wood.}     
 #'       }
 #'    }
 #'    \item{\code{Fires}: A data frame of target, burnt and suppresed area per fire
@@ -129,7 +127,7 @@
 #'         \item{\code{fire.id}: Fire event identificator.}
 #'         \item{\code{spp}: Code of the tree species or land-cover type.}
 #'         \item{\code{aburnt}: Area effectively burnt (in ha).}
-#'         \item{\code{bburnt}: Basal area effectively burnt (in \eqn{m^{2}·ha^{-1}}).}
+#'         \item{\code{bburnt}: Basal area effectively burnt (in \eqn{m^{2}ha^{-1}}).}
 #'       }
 #'    }
 #'    \item{\code{PostFire}: A data frame of species replacement after fire
@@ -178,7 +176,7 @@
 #'         \item{\code{spp}: Code of shrublands.}
 #'         \item{\code{area}: Area (in ha).}
 #'       }
-#'    }
+#'     }
 #'  }
 #'  
 #' @export
@@ -187,8 +185,8 @@
 #'
 #' \dontrun{
 #' library(medLDM)
-#' # Run one single 80-year replicate with forest management and default RCP 4.5 climate projections 
-#' ldm(is.harvest = T)
+#' # Run one single 90-year replicate with forest management
+#' result = land.dyn.mdl(is.harvest = T)
 #' }
 #'
 
