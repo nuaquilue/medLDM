@@ -301,7 +301,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   track.post.fire = data.frame(run=NA, year=NA, spp.out=NA, spp.in=NA, area=NA)
   track.afforest = data.frame(run=NA, year=NA, spp=NA, area=NA)
   track.encroach = data.frame(run=NA, year=NA, spp=NA, area=NA)
-  track.land = data.frame(run=NA, year=NA, spp=NA, age.class=NA, area=NA, vol=NA, volbark=NA, carbon=NA)
+  track.land = data.frame(run=NA, year=NA, spp=NA, age.class=NA, area=NA, biom=NA, vol=NA, volbark=NA, carbon=NA)
   track.sqi = data.frame(run=NA, year=NA, spp=NA, sqi=NA, area=NA, vol=NA, volbark=NA)
   
   
@@ -329,11 +329,11 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                         ifelse(spp<=7 & age>50, "old", ifelse(spp>7 & spp<=13 & age<=15, "young",
                         ifelse(spp>7 & spp<=13 & age<=50, "mature", "old")))))) %>%       
                  group_by(spp, age.class) %>% select(-c_ba) %>%
-                 summarise(area=length(vol), vol=sum(vol), volbark=sum(volbark), carbon=sum(carbon))  
+                 summarise(area=length(vol), biom=sum(biom), vol=sum(vol), volbark=sum(volbark), carbon=sum(carbon))  
     aux.shrub = filter(land, spp==14) %>% select(spp, biom) %>% group_by(spp) %>%
-                summarise(age.class=NA, area=length(biom), vol=sum(biom), volbark=0, carbon=0)  
+                summarise(age.class=NA, area=length(biom), biom=sum(biom), vol=0, volbark=0, carbon=0)  
     aux.other = filter(land, spp>14) %>% select(spp) %>% group_by(spp) %>%
-                summarise(age.class=NA, area=length(spp), vol=0, volbark=0, carbon=0)  
+                summarise(age.class=NA, area=length(spp), biom=0, vol=0, volbark=0, carbon=0)  
     track.land = rbind(track.land, data.frame(run=irun, year=0, aux.forest), data.frame(run=irun, year=0, aux.shrub),
                        data.frame(run=irun, year=0, aux.other))
   
@@ -446,7 +446,10 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         # Rural abandonment
         visit.cells = c(visit.cells, chg.cells)
         chg.cells = land.cover.change(land, 3, lchg.demand$lct.rabn[t], visit.cells)
-        land$spp[land$cell.id %in% chg.cells] = clim$spp[clim$cell.id %in% chg.cells] = 14  # shrub
+        land$spp[land$cell.id %in% chg.cells & orography$elev <1500] = 
+          clim$spp[clim$cell.id %in% chg.cells & orography$elev <1500] = 14  # shrub
+        land$spp[land$cell.id %in% chg.cells & orography$elev >=1500] = 
+          clim$spp[clim$cell.id %in% chg.cells & orography$elev >=1500] = 15  # grass
         land$typdist[land$cell.id %in% chg.cells] = "lchg.rabn"
         land$biom[land$cell.id %in% chg.cells] = 0
         land$age[land$cell.id %in% chg.cells] = 0
@@ -726,11 +729,11 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                                          ifelse(spp<=7 & age>50, "old", ifelse(spp>7 & spp<=13 & age<=15, "young",
                                               ifelse(spp>7 & spp<=13 & age<=50, "mature", "old")))))) %>%       
                      group_by(spp, age.class) %>% select(-c_ba) %>%
-                     summarise(area=length(vol), vol=sum(vol), volbark=sum(volbark), carbon=sum(carbon))  
+                     summarise(area=length(vol), biom=sum(biom), vol=sum(vol), volbark=sum(volbark), carbon=sum(carbon))  
         aux.shrub = filter(land, spp==14) %>% select(spp, biom) %>% group_by(spp) %>%
-                    summarise(age.class=NA, area=length(biom), vol=sum(biom), volbark=0, carbon=0)  
+                    summarise(age.class=NA, area=length(biom), biom=sum(biom), vol=0, volbark=0, carbon=0)  
         aux.other = filter(land, spp>14) %>% select(spp) %>% group_by(spp) %>%
-                    summarise(age.class=NA, area=length(spp), vol=0, volbark=0, carbon=0)  
+                    summarise(age.class=NA, area=length(spp), biom=0, vol=0, volbark=0, carbon=0)  
         track.land = rbind(track.land, data.frame(run=irun, year=t, aux.forest), data.frame(run=irun, year=t, aux.shrub),
                             data.frame(run=irun, year=t, aux.other))
         aux.forest = filter(land, spp<=13) %>% select(cell.id, spp, age, biom, sqi) %>% 

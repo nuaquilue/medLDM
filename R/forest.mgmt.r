@@ -149,7 +149,7 @@ forest.mgmt = function(land, clim, demand.sawlog=0, demand.wood=0, policy="BAU")
   sustain = filter(suit.mgmt, !is.na(todo)) %>% 
             left_join(select(harvest.prescrip, spp, sqi, prescription, pctg.extract, remain.ba),
                       by=c("spp", "sqi", "todo"="prescription")) %>% 
-            mutate(ba.extract=pmin((pctg.extract/100)*(biom/10), ifelse(is.na(remain.ba), biom/10, biom/10-remain.ba)),
+            mutate(ba.extract=pmin((pctg.extract/100)*biom, ifelse(is.na(remain.ba), biom, biom-remain.ba)),
                    vol.extract=c_ba*ba.extract+c2_ba*ba.extract*ba.extract) 
   
   ## now determine the volume that may go to sawlogs, and the volume that may go to wood
