@@ -52,6 +52,14 @@
 #'         \item{\code{volbark}: Volume with bark in \eqn{m^{3}}.}
 #'       }
 #'    }
+#'    \item{\code{Carbon}: A data frame of carbon emissions and generation per type of process
+#'      \itemize{
+#'         \item{\code{run}: Number of replicate.}
+#'         \item{\code{year}: Year YYYY.}
+#'         \item{\code{type}: Process involved in the generation or emission of Carbon dioxide.}
+#'         \item{\code{carbon}: Carbon dioxide quantity in \eqn{g}.}
+#'       }
+#'    }
 #'    \item{\code{Harvest}: A data frame of sawlog and wood volume harvested per species 
 #'    (included if \code{is.harvesting}), with columns:
 #'      \itemize{
@@ -303,6 +311,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   track.encroach = data.frame(run=NA, year=NA, spp=NA, area=NA)
   track.land = data.frame(run=NA, year=NA, spp=NA, age.class=NA, area=NA, biom=NA, vol=NA, volbark=NA, carbon=NA)
   track.sqi = data.frame(run=NA, year=NA, spp=NA, sqi=NA, area=NA, vol=NA, volbark=NA)
+  track.cbalance = data.frame(run=NA, year=NA, process=NA, type=NA, carbon=NA)
   
   
   ## Start the simulations
@@ -424,6 +433,12 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
       if(is.land.cover.change & t %in% lchg.schedule){
         # Urbanization
         chg.cells = land.cover.change(land, 1, lchg.demand$lct.urban[t], numeric())
+        emissions = filter(land, spp<=13, cell.id %in% chg.cells) %>% 
+          left_join(ba.carbon, by="spp") %>% mutate(carbon=biom*c_ba)
+        if(nrow(emissions)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+            process="urbanization", type="emission", carbon=sum(emissions$carbon)))
+        }
         land$spp[land$cell.id %in% chg.cells] = clim$spp[clim$cell.id %in% chg.cells] = 20 # urban
         land$typdist[land$cell.id %in% chg.cells] = "lchg.urb"
         land$biom[land$cell.id %in% chg.cells] = NA
@@ -435,6 +450,12 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         # Agriculture conversion
         visit.cells = chg.cells
         chg.cells = land.cover.change(land, 2, lchg.demand$lct.agri[t], visit.cells)
+        emissions = filter(land, spp<=13, cell.id %in% chg.cells) %>% 
+          left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=biom*c)
+        if(nrow(emissions)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+            process="agri.conver", type="emission",  carbon=sum(emissions$carbon)))
+        }
         land$spp[land$cell.id %in% chg.cells]= clim$spp[clim$cell.id %in% chg.cells] = 16 # arableland or 17 - permanent crops
         land$typdist[land$cell.id %in% chg.cells] = "lchg.agri"
         land$tsdist[land$cell.id %in% chg.cells] = 0
@@ -514,11 +535,28 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$biom[land$cell.id %in% extracted.wood$cell.id[extracted.wood$todo=="removal.cut"]] = 0
         # but there's regeneration of 9 year old in areas harvested under shelterwood
         if(sum(extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100)>0){
-          for(i in 1:9)
+          for(i in 1:9){
             land$biom[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100]] = 
               growth(land[land$cell.id %in% extracted.sawlog$cell.id[extracted.sawlog$todo=="removal.cut" & extracted.sawlog$pctg.extract < 100],], clim, paste("Cohort", i))
+          }
+          emissions = filter(land, spp<=13, cell.id %in% extracted.sawlog$cell.id[sel]) %>% 
+            left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=biom*c)
+          if(nrow(emissions)>0){
+            track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+              process="removal", type="change", carbon=sum(emissions$carbon)))
+          }
         }
         
+        # track carbon emissions and generation
+        if(nrow(extracted.sawlog)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, process="cut.sawlog", type="generation", 
+            carbon=sum(extracted.sawlog$carbon.extract.sawlog)))
+        }
+        if(nrow(extracted.wood)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, process="cut.wood", type="emission", 
+            carbon=sum(extracted.sawlog$carbon.extract.wood)+sum(extracted.wood$carbon.extract.sawlog)+
+              sum(extracted.wood$carbon.extract.wood)))
+        }
         # track the vol extracted per each spp
         if(nrow(extracted.sawlog)>0){
           aux = group_by(extracted.sawlog, spp) %>% summarise(vol.sawlog=sum(vol.extract.sawlog), vol.wood=sum(vol.extract.wood))
@@ -561,6 +599,12 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         burnt = !is.na(wildfires[,t+1])
         if(sum(burnt)>0){
           burnt.cells = data.frame(cell.id=wildfires$cell.id[burnt], fintensity=1)
+          emissions = filter(land, spp<=13, cell.id %in% burnt.cells$cell.id) %>% 
+            left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=biom*c)
+          if(nrow(emissions)>0){
+            track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+              process="fire", type="emission",  carbon=sum(emissions$carbon)))
+          }
           land$tsdist[land$cell.id %in% burnt.cells$cell.id] = 0
           land$tburnt[land$cell.id %in% burnt.cells$cell.id] = land$tburnt[land$cell.id %in% burnt.cells$cell.id] + 1
           land$typdist[land$cell.id %in% burnt.cells$cell.id] = "highfire"
@@ -579,10 +623,15 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
           track.fire = rbind(track.fire, data.frame(run=irun, fire.out[[1]]))
         burnt.cells = fire.out[[2]] %>% select(-igni)
         if(nrow(burnt.cells)>0){
-          aux = left_join(burnt.cells, select(land, cell.id, spp, biom), by="cell.id") %>%
-            mutate(bburnt=ifelse(fintensity>params$fire.intens.th, biom, biom*(1-fintensity))) %>%
-            group_by(fire.id, spp) %>% summarise(aburnt=length(spp), bburnt=round(sum(bburnt, na.rm=T),1))
-          track.fire.spp =  rbind(track.fire.spp, data.frame(run=irun, year=t, aux)) 
+          aux <- left_join(burnt.cells, select(land, cell.id, spp, biom), by="cell.id") %>%
+            mutate(biom.burnt=ifelse(fintensity>fire.intens.th, biom, biom*(1-fintensity))) 
+          emissions = aux %>% filter(spp<=13) %>% left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=biom*c)
+          if(nrow(emissions)>0){
+            track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+              process="fire", type="emission",  carbon=sum(emissions$carbon)))
+          }
+          aux = aux %>% group_by(fire.id, spp) %>% summarize(area.burnt=length(spp), biom.burnt=round(sum(biom.burnt, na.rm=T),1))
+          track.fire.spp <-  rbind(track.fire.spp, data.frame(run=irun, year=t, aux)) 
           # track.step = rbind(track.step, data.frame(run=irun, fire.out[[3]]))
           # track.sr = rbind(track.sr, data.frame(run=irun, fire.out[[3]]))
         }
@@ -609,6 +658,17 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         # Annual area burnt for PB
         annual.burnt.area = ifelse(exists("burnt.cells"), nrow(burnt.cells), 0)
         fire.out = fire.regime(land, clim, params, swc=4, clim.sever, annual.burnt.area=0, step=t)
+        # Carbon emissions
+        burnt.cells <- fire.out[[2]] %>% select(-igni)
+        if(nrow(burnt.cells)>0){
+          aux <- left_join(burnt.cells, select(land, cell.id, spp, biom), by="cell.id") %>%
+            mutate(biom.burnt=ifelse(fintensity>fire.intens.th, biom, biom*(1-fintensity))) 
+          emissions = aux %>% filter(spp<=13) %>% left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=biom*c)
+          if(nrow(emissions)>0){
+            track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+                                                              process="pb", type="emission",  carbon=sum(emissions$carbon)))
+          }
+        }
         # Track pb and Done with prescribed burns!
         if(nrow(fire.out[[1]])>0){
           track.pb = rbind(track.pb, data.frame(run=irun, fire.out[[1]][,c(1,3,4,6,7,9)]))
@@ -628,9 +688,16 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         killed.cells = drought(land, decade, t)
         land$tsdist[land$cell.id %in% killed.cells] = 0
         land$typdist[land$cell.id %in% killed.cells] = "drght"
-        if(length(killed.cells)>0)
+        if(length(killed.cells)>0){
           track.drought = rbind(track.drought, data.frame(run=irun, year=t, 
                   filter(land, cell.id %in% killed.cells) %>% group_by(spp) %>% summarise(area=length(spp))))
+          emissions = filter(land, spp<=13, cell.id %in%killed.cells) %>% 
+            left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=biom*c)
+          if(nrow(emissions)>0){
+            track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, 
+              process="drought", type="emission",  carbon=sum(emissions$carbon)))
+          }
+        }
       }
       
       
@@ -719,6 +786,33 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$age = pmin(land$age+1,600)
         land$tsdist = pmin(land$tsdist+1,600)
         land$tscut = pmin(land$tscut+1,600)
+        
+        # Track carbon generation: new cohorts after afforestation, cohort establishment, and post-fire regeneration 
+        aux = filter(land, spp<=13, tsdist==1, typdist %in% c("afforest", "drght", "highfire")) %>% 
+          left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=c*biom) %>% 
+          mutate(process=ifelse(typdist=="highfire", "fire.rege", ifelse(typdist=="drght", "cohort.establish", typdist)), type="generation") %>% 
+          group_by(process, type) %>% summarise(carbon=sum(carbon))
+        if(nrow(aux)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, aux))
+        }
+        # Track carbon generation: growht in cut stands and low-intensity burnt (removal cuts of 9-y are here)
+        aux = filter(land, spp<=13, tsdist==1, typdist %in% c("cut", "lowfire")) %>% 
+          left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=c*(biom-prev.biom)) %>% 
+          mutate(process=ifelse(typdist=="cut", "cut", "burnt"), type="change") %>% 
+          group_by(process, type) %>% summarise(carbon=sum(carbon))
+        if(nrow(aux)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, aux))
+        }
+        # Track carbon generation by growth
+        aux = filter(land, spp<=13, tsdist>1) %>% 
+          left_join(eq.ba.carbon, by="spp") %>% mutate(carbon=c*(biom-prev.biom)) %>% 
+          mutate(process="growth", type="change") %>% 
+          group_by(process, type) %>% summarise(carbon=sum(carbon))
+        if(nrow(aux)>0){
+          track.cbalance = rbind(track.cbalance, data.frame(run=irun, year=t, aux))
+        }
+        
+        # Track totals
         aux.forest = filter(land, spp<=13) %>% select(spp, age, biom) %>% left_join(ba.vol, by="spp") %>% 
                      mutate(vol=c_ba*biom+c2_ba*biom*biom) %>% select(-c_ba, -c2_ba) %>%
                      left_join(ba.volbark, by="spp") %>% 
@@ -759,7 +853,8 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
   
   cat("\n", "C. Build outputs...\n")
   res = list(Land = track.land[-1,],
-             LandSQI = track.sqi[-1,]
+             LandSQI = track.sqi[-1,],
+             Carbon = track.cbalance[-1,]
   )
   if(is.harvest){
     res = c(res, list(Harvest = track.harvested[-1,],
