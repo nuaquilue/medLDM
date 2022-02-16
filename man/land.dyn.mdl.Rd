@@ -99,6 +99,14 @@ A list with the following 13 items:
         \item{\code{volbark}: Volume with bark in \eqn{m^{3}}.}
       }
    }
+   \item{\code{Carbon}: A data frame of carbon emissions and generation per type of process
+     \itemize{
+        \item{\code{run}: Number of replicate.}
+        \item{\code{year}: Year YYYY.}
+        \item{\code{type}: Process involved in the generation or emission of Carbon dioxide.}
+        \item{\code{carbon}: Carbon dioxide quantity in \eqn{g}.}
+      }
+   }
    \item{\code{Harvest}: A data frame of sawlog and wood volume harvested per species 
    (included if \code{is.harvesting}), with columns:
      \itemize{

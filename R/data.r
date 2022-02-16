@@ -5,9 +5,10 @@
 #' @format A data frame with as many rows as grid cells in the study area and 4 variables:
 #' \describe{
 #'   \item{cell.id}{Unique grid cell indentificator}
-#'   \item{tmin}{Historical (1971-2000) mean minimum temperature, in ºC}
-#'   \item{tmax}{Historical (1971-2000) mean maximum temperature, in ºC}
-#'   \item{precip}{Historical (1971-2000) accumulated precipitation, in mm}
+#'   \item{tmin}{Historical (1976-2000) standarized mean minimum temperature, in ºC}
+#'   \item{tmax}{Historical (1976-2000) standarized mean maximum temperature, in ºC}
+#'   \item{precip}{Historical (1976-2000) standarized accumulated precipitation, in mm}
+#'   \item{pet}{Historical (1976-2000) potential evapotranspiration, in mm}
 #' }
 "clim"
 

@@ -10,7 +10,7 @@
 #' 1 - wind, 2 - heat, 3 - regular, or 4 - prescribed burns
 #' @param clim.sever Climatic severity of the year: 0 - mild, 1 - severe
 #' @param annual.burnt.area The total burnt area in the current time stepA string indicating which regional policy is adopted to allocate the timber demands
-#' @param step Integer indicating the current time step
+#' @param time.step Integer indicating the current time step
 #' @param out.path String with the directory path to save log files
 #' 
 #' @return A list of two objects: A data frame with target, burnt and suppressed areas per fire, and 
@@ -26,10 +26,10 @@
 #' land = landscape
 #' land$interface = interface(landscape)
 #' # Simulate wildfires under Wind synoptic weather conditions for a climatic mild year
-#' fire.regime(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1, out.path=tempdir())
+#' fire.regime(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, time.step = 1, out.path=tempdir())
 #' 
 
-fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, step = 1, out.path){
+fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt.area = 0, time.step = 1, out.path){
   
   ## Function to select items not in a vector
   `%notin%` = Negate(`%in%`)
@@ -68,10 +68,12 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
     
     ## To be sure that non-burnable covers do not burn (water, rock, urban), nor agriculture land
     ## under prescribed burns
-    if(iswc<4)
+    if(iswc<4){
       i = land$spp<=17        # 2.938.560
-    else
+    }
+    else{
       i = land$spp<=15        # 1.937.915
+    }
     subland = land[i,]
     subland = select(subland, cell.id, spp, biom, age)
     suborography = orography[i,1:2]  # cell.id & elev
@@ -81,15 +83,17 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
     ## Find either fixed or stochastic annual target area for wildfires
     if(iswc<4){ 
       ## Fixed
-      if(sum(climatic.severity[climatic.severity$year==step,2:4])>0){  
+      x = filter(climatic.severity, year==time.step) %>% select(-year, -prob.sevr)
+      if(sum(x) > 0){  
         is.aba.fix = T
-        area.target = pmin(200000-(annual.aburnt+annual.asupp), climatic.severity[climatic.severity$year==t, iswc+1])
+        area.target = pmin(200000-(annual.aburnt+annual.asupp), 
+                           climatic.severity[climatic.severity$year==time.step, iswc+1])
       }
       ## Find stochastic annual burnt area
       else{ 
         is.aba.fix = F
         if(clim.sever==1 & iswc==1){  # decide if climatic severity is extrem for 'wind' or 'heat' swc
-          pctg = hot.days[hot.days$year==step, iswc+1]
+          pctg = hot.days[hot.days$year==time.step, iswc+1]
           prob.extrem = 1/(1+exp(-(prob.hot$inter[iswc] + prob.hot$slope[iswc]*pctg)))
           if(runif(1,0,100) <= prob.extrem) # extreme
             clim.sever = 2
@@ -138,9 +142,9 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
     ## Start burn until annual area target is not reached
     while(area.target>0){
       
-      ## ID for each fire event, and restart step
+      ## ID for each fire event, and restart fire.step
       fire.id = fire.id+1
-      step = 1
+      fire.step = 1
       
       ## Select an ignition point, to then decide the fire spread type, the fire suppression level,
       ## the wind direction and the target fire size according to clim and fire spread type
@@ -152,8 +156,9 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
         cat("NA in prob.igni")
         pigni$psft[!is.finite(pigni$psft)] = 0
       }
-      else
+      else{
         igni.id = sample(pigni$cell.id, 1, replace=F, prob=pigni$psft)
+      }
       
       # Assign the fire spread type
       if(iswc==1 | iswc==3)
@@ -249,7 +254,7 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
       visit.cells = c(visit.cells, igni.id) 
       burnt.cells = c(burnt.cells, igni.id) 
       track.burnt.cells = rbind(track.burnt.cells, 
-                                data.frame(cell.id=igni.id, fire.id=fire.id, fire.step=step, fintensity=1, igni=T))
+                                data.frame(cell.id=igni.id, fire.id=fire.id, fire.step=fire.step, fintensity=1, igni=T))
       
       # cat(paste("Fire:", fire.id, "- aTarget:", fire.size.target, "- igni:", igni.id))
       
@@ -257,7 +262,7 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
       while((aburnt.lowintens+aburnt.highintens+asupp.sprd+asupp.fuel)<fire.size.target){
         
         ## Increment step
-        step = step+1
+        fire.step = fire.step+1
         
         ## Build a data frame with the theoretical 12 (=default.nneigh) neighbours of cells in fire.front, 
         ## and add the per definition wind direction and the distance.
@@ -367,7 +372,7 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
         if(sum(sprd.rate$burn & !(sprd.rate$tosupp.fuel | sprd.rate$tosupp.sprd))>0)  
           track.burnt.cells = rbind(track.burnt.cells, 
                                     data.frame(cell.id=sprd.rate$cell.id[sprd.rate$burn & !sprd.rate$tosupp.sprd & !sprd.rate$tosupp.fuel], 
-                                               fire.id=fire.id, fire.step=step,
+                                               fire.id=fire.id, fire.step=fire.step,
                                                fintensity=sprd.rate$fi[sprd.rate$burn & !sprd.rate$tosupp.sprd & !sprd.rate$tosupp.fuel],
                                                igni=F))
 
@@ -433,13 +438,13 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
           break
         
         ## Track spreading spet
-        # track.step = rbind(track.step, data.frame(year=t, fire.id, step, nneigh=nrow(neigh.id),
+        # track.step = rbind(track.step, data.frame(year=t, fire.id, fire.step, nneigh=nrow(neigh.id),
         #                          nneigh.in=length(i.land.in.neigh), nburn, nff=length(fire.front)))
         
       } # while 'fire.size.target'
       
       ## Write info about this fire
-      track.fire = rbind(track.fire, data.frame(year=step, swc=iswc, clim.sever, fire.id, fst=fire.spread.type, 
+      track.fire = rbind(track.fire, data.frame(year=time.step, swc=iswc, clim.sever, fire.id, fst=fire.spread.type, 
                                                  wind=fire.wind, atarget=fire.size.target, aburnt.highintens, 
                                                  aburnt.lowintens, asupp.fuel, asupp.sprd))
       # cat(paste(" - aBurnt:", aburnt.lowintens+aburnt.highintens, "- aSupp:", asupp.sprd+asupp.fuel), "\n")
