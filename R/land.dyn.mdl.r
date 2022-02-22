@@ -1,7 +1,7 @@
-#' Mediterranean Landscape Dynamic Model m
+#' Mediterranean Landscape Dynamic Model
 #'
-#' Run the Mediterranean Landscape Dynamic Model medLDM that includes the processes of land-cover changes
-#' wilfires, prescribed burns, fire suppression, timber and wood harvesting and vegetation dynamics.
+#' Run the Mediterranean Landscape Dynamic Model medLDM that includes the processes of land-cover changes,
+#' wilfires, prescribed burns, fire suppression, timber and wood harvesting, and vegetation dynamics.
 #'
 #' @param is.land.cover.change A flag to indicate that land cover changes are simulated
 #' @param is.harvest A flag to indicate that harvesting for sawlogs and wood is simulated
@@ -24,7 +24,8 @@
 #' @param save.land A flag to save as a RDS file the \code{landscape} data frame at the time step indicated in \code{out.seq}
 #' @param out.seq Numeric vector with the time steps the \code{landscape} is saved
 #' @param out.path String with the directory path to save the \code{landscape} data frame at each time step indicated in \code{out.seq}
-#' @param ... Other parameters of the function
+#' @param lchg.demand A data frame with the demand (in ha) of each land-cover transition for each \code{clim.step} when \code{is.land.cover.change} is TRUE
+#' @param harvest.demand A data framw with the demand (in m3) of sawlogs and wood for each \code{clim.step} when \code{is.harvest} is TRUE
 #'
 #' @return A list with the following 13 items:
 #'  \itemize{
@@ -204,12 +205,18 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                         is.cohort.establish = TRUE, is.afforestation = TRUE, is.encroachment = TRUE, 
                         is.growth = TRUE, spin.up = TRUE, custom.params = NA, clim.proj = NA, 
                         nrun = 1, time.step = 1, clim.step = 10, time.horizon = 90, save.land = FALSE, 
-                        out.seq = NA, out.path = NA, ...){
+                        out.seq = NA, out.path = NA, lchg.demand=NA, harvest.demand=NA){
   
   options(dplyr.summarise.inform=F)
   `%notin%` = Negate(`%in%`)
   
   cat("A. Data preparation ...\n")
+  
+  ## Create output directory to write model's outputs and log files
+  if(is.na(out.path)){
+    stop("Directory path to save outputs not provided")
+  }
+  dir.create(file.path(out.path), showWarnings = FALSE) 
   
   ## Build the baseline time sequence and the time sequence of the processes (shared for all runs). 
   ## 1. Climate change, 2. Land-cover changes, 3. Forest management
@@ -245,7 +252,6 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         warning("Not all time steps in the output sequence provided are simulated.", call.=F)
       }
     }
-    if(is.na(out.path)) stop("Directory path to save outputs not provided")
   }
   
   ## Get the list of default parameters and update user-initialized parameters
@@ -291,6 +297,32 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
     }
     is.climate.change = TRUE
   } 
+  
+  ## Check the demand data.frames 
+  if(is.land.cover.change){
+    if(inherits(lchg.demand, "data.frame")){
+      if(nrow(lchg.demand) < length(lchg.schedule))
+        stop("Missing rows in the land-cover transitions data frame") 
+      if(sum(colnames(lchg.demand) %in% c("step", "lct.urban", "lct.agri", "lct.rabn"))<ncol(lchg.demand))
+        stop("Format of the land-cover transitions data frame is not correct. It has to have four
+             columns named 'step', 'lct.urban', 'lct.agri', and 'lct.rabn'")
+    }
+    else{
+      stop("Land-cover transitions data frame not provided")
+    }
+  }
+  if(is.harvest){
+    if(inherits(harvest.demand, "data.frame")){
+      if(nrow(harvest.demand) != length(mgmt.schedule))
+        stop("Missing or extra rows in the data frame of land-cover change demand") 
+      if(sum(colnames(harvest.demand) %in% c("step", "sawlog", "wood"))<ncol(harvest.demand))
+        stop("Format of the climatic projections data frame is not correct. It has to have three
+             columns named 'step', 'sawlog' and 'wood'")
+    }
+    else{
+      stop("Harvest demand data frame not provided")
+    }
+  }
   
   ## Initialize tracking data.frames
   track.harvested = data.frame(run=NA, year=NA, spp=NA, vol.sawlog=NA, vol.wood=NA)
@@ -399,7 +431,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$tsdist[land$cell.id %in% c(urban.cells, water.cells)] = NA
         land$tsdist[land$cell.id %in% c(grass.cells, shrub.cells)] = 0
         land$typdist[land$cell.id %in% grass.cells] = "lchg.agri"
-        land$typdist[land$cell.id %in% shrub.cells] = "lchg.rabn"
+        land$typdist[land$cell.id %in% shrub.cells] = "lchg.rabn.obs"   
         land$tburnt[land$cell.id %in% c(urban.cells, water.cells)] = NA
         land$tburnt[land$cell.id %in% c(grass.cells, shrub.cells)] = 0
         land$sdm[land$cell.id %in% c(urban.cells, water.cells, grass.cells)] = NA
@@ -407,7 +439,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         ## Update sdm and sqi for shrublands
         land$sdm[land$cell.id %in% shrub.cells] = 1
         if(length(shrub.cells)>0){
-          sqi.shrub = filter(clim, cell.id %in% shrub.cells) %>% select(spp, tmin, precip) %>% 
+          sqi.shrub = filter(clim, cell.id %in% shrub.cells) %>% select(tmin, precip) %>% 
                        mutate(aux.brolla=sq.shrub$c0_brolla+sq.shrub$c_temp_brolla*tmin+sq.shrub$c_temp2_brolla*tmin*tmin+sq.shrub$c_precip_brolla*precip+sq.shrub$c_precip2_brolla*precip*precip,
                        aux.maquia=sq.shrub$c0_maquia+sq.shrub$c_temp_maquia*tmin+sq.shrub$c_temp2_maquia*tmin*tmin+sq.shrub$c_precip_maquia*precip+sq.shrub$c_precip2_maquia*precip*precip,
                        aux.boix=sq.shrub$c0_boix+sq.shrub$c_temp_boix*tmin+sq.shrub$c_temp2_boix*tmin*tmin+sq.shrub$c_precip_boix*precip+sq.shrub$c_precip2_boix*precip*precip,
@@ -416,7 +448,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                    sqi=ifelse(sqest.brolla>=sqest.maquia & sqest.brolla>=sqest.boix, 1,
                               ifelse(sqest.maquia>=sqest.brolla & sqest.maquia>=sqest.boix, 2,
                                      ifelse(sqest.boix>=sqest.brolla & sqest.boix>=sqest.maquia, 3, 0))))
-          clim$sqi[clim$cell.id %in% shrub.cells] = sqi.shrub$sqi
+          land$sqi[land$cell.id %in% shrub.cells] = sqi.shrub$sqi
         }
         ## Change in the base dataframe, to not repeat
         obs.lcc$code[obs.lcc$cell.id %in% urban.cells] = 2020
@@ -424,7 +456,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         obs.lcc$code[obs.lcc$cell.id %in% grass.cells] = 1515
         obs.lcc$code[obs.lcc$cell.id %in% shrub.cells] = 1414
         
-        if(any(is.infinite(sqi.shrub$sq.brolla)) | any(is.na(sqi.shrub$sq.brolla))){
+        if(any(is.na(sqi.shrub$sqi)) | sqi.shrub$sqi==0){
           write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
           stop("Error SQI shrub")
         }
@@ -478,21 +510,17 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$tsdist[land$cell.id %in% chg.cells] = 0
         land$tburnt[land$cell.id %in% chg.cells] = 0
         land$sdm[clim$cell.id %in% chg.cells] = 1
-        sqi.shrub = filter(clim, cell.id %in% chg.cells) %>% select(spp, tmin, precip) %>% 
+        sqi.shrub = filter(clim, cell.id %in% chg.cells) %>% select(tmin, precip) %>% 
                     mutate(aux.brolla=sq.shrub$c0_brolla+sq.shrub$c_temp_brolla*tmin+sq.shrub$c_temp2_brolla*tmin*tmin+sq.shrub$c_precip_brolla*precip+sq.shrub$c_precip2_brolla*precip*precip,
                     aux.maquia=sq.shrub$c0_maquia+sq.shrub$c_temp_maquia*tmin+sq.shrub$c_temp2_maquia*tmin*tmin+sq.shrub$c_precip_maquia*precip+sq.shrub$c_precip2_maquia*precip*precip,
                     aux.boix=sq.shrub$c0_boix+sq.shrub$c_temp_boix*tmin+sq.shrub$c_temp2_boix*tmin*tmin+sq.shrub$c_precip_boix*precip+sq.shrub$c_precip2_boix*precip*precip,
-                    sq.brolla=1/(1+exp(-1*aux.brolla)), sq.maquia=1/(1+exp(-1*aux.maquia)), sq.boix=1/(1+exp(-1*aux.boix))) #%>% 
-        if(is.infinite(max(sqi.shrub$sq.brolla)) | is.infinite(max(sqi.shrub$sq.maquia))  | is.infinite(max(sqi.shrub$sq.boix)) ){
-          write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
-          cat("INF in sqi.shrub - SIM.LC.CHANGE")  
-        }
-        sqi.shrub = mutate(sqi.shrub, sqest.brolla=sq.brolla/max(sq.brolla), sqest.maquia=sq.maquia/max(sq.maquia), sqest.boix=sq.boix/max(sq.boix),
+                    sq.brolla=1/(1+exp(-1*aux.brolla)), sq.maquia=1/(1+exp(-1*aux.maquia)), sq.boix=1/(1+exp(-1*aux.boix))) %>% 
+                    mutate(sqest.brolla=sq.brolla/max(sq.brolla), sqest.maquia=sq.maquia/max(sq.maquia), sqest.boix=sq.boix/max(sq.boix),
                            sqi=ifelse(sqest.brolla>=sqest.maquia & sqest.brolla>=sqest.boix, 1,
                                        ifelse(sqest.maquia>=sqest.brolla & sqest.maquia>=sqest.boix, 2,
                                               ifelse(sqest.boix>=sqest.brolla & sqest.boix>=sqest.maquia, 3, 0))))
         land$sqi[land$cell.id %in% chg.cells] = sqi.shrub$sqi
-        if(any(is.infinite(sqi.shrub$sq.brolla)) | any(is.na(sqi.shrub$sq.brolla))){
+        if(is.na(sqi.shrub$sqi) | sqi.shrub$sqi==0){
           write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
           stop("Error SQI shrub")
         }

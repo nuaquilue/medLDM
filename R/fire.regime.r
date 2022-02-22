@@ -333,6 +333,8 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
         if(nrow(sprd.rate)!=sum(source.supp$cell.id %in% sprd.rate$cell.id)){
           write.table(sprd.rate, paste0(out.path, "/ErrorSR.txt"), quote=F, row.names=F, sep="\t")
           write.table(sprd.rate.sources, paste0(out.path, "/ErrorSRsource.txt"), quote=F, row.names=F, sep="\t")
+          error = filter(land, cell.id %in% sprd.rate$cell.id[is.na(sprd.rate$fi)])
+          write.table(as.data.frame(error), paste0(out.path, "/ErrorCell.txt"), quote=F, row.names=F, sep="\t")
           stop("dif num cells")
         }
         source.supp$nsupp.sprd[source.supp$cell.id %in% sprd.rate$cell.id] = sprd.rate$nsupp.sprd
@@ -362,6 +364,8 @@ fire.regime = function(land, clim, params, swc = 1, clim.sever = 0, annual.burnt
         if(is.na(nburn)){
           write.table(sprd.rate, paste0(out.path, "/ErrorSR.txt"), quote=F, row.names=F, sep="\t")
           write.table(sprd.rate.sources, paste0(out.path, "/ErrorSRsource.txt"), quote=F, row.names=F, sep="\t")
+          error = filter(land, cell.id %in% sprd.rate$cell.id[is.na(sprd.rate$fi)])
+          write.table(as.data.frame(error), paste0(out.path, "/ErrorCell.txt"), quote=F, row.names=F, sep="\t")
           stop("NA in spread.rate")
         }
         if(nburn==0)

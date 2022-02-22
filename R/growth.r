@@ -31,13 +31,15 @@ growth = function(land, clim, who = ""){
   aux.spp.sdmout = filter(aux.spp, sdm==0) %>% left_join(filter(growth.tree, sqi==1) %>% select(-sqi), by = "spp") %>% 
                    mutate(increment = c0 + c_ab*biom + c2_ab*biom*biom ) %>%
                    mutate(increment=ifelse(increment<0,0,increment)) %>% select(cell.id, increment)
-  aux.shrub = filter(land, spp==14)  %>% left_join(growth.shrub, by="sqi")  %>%
+  aux.shrub0 = filter(land, spp==14 & biom==0) %>% left_join(growth.shrub, by="sqi") %>%
+               mutate(increment = b ) %>% select(cell.id, increment)
+  aux.shrub = filter(land, spp==14 & biom>0) %>% left_join(growth.shrub, by="sqi") %>%
               mutate(increment = a*log(biom) + b ) %>% 
-              mutate(increment = ifelse(increment<=0 | is.infinite(increment), b, increment)) %>% 
+              mutate(increment = ifelse(increment<=0, b, increment)) %>% 
               select(cell.id, increment)
       
   ## Join increment
-  all = rbind(aux.spp.sdmin, aux.spp.sdmout, aux.shrub)
+  all = rbind(aux.spp.sdmin, aux.spp.sdmout, aux.shrub0, aux.shrub)
   new.biom = left_join(land, all, by = "cell.id") %>% mutate(biom=biom+increment) 
   return(new.biom$biom)
 }

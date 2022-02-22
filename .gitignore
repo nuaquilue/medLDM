@@ -5,8 +5,6 @@
 src/*.o
 src/*.so
 src/*.dll
-outputs
 scripts
 vignettes
-data_cat
-data_solsones
+outputs
