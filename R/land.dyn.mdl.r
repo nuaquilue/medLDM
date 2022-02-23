@@ -431,7 +431,7 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         land$tsdist[land$cell.id %in% c(urban.cells, water.cells)] = NA
         land$tsdist[land$cell.id %in% c(grass.cells, shrub.cells)] = 0
         land$typdist[land$cell.id %in% grass.cells] = "lchg.agri"
-        land$typdist[land$cell.id %in% shrub.cells] = "lchg.rabn.obs"   
+        land$typdist[land$cell.id %in% shrub.cells] = "lchg.rabn"   
         land$tburnt[land$cell.id %in% c(urban.cells, water.cells)] = NA
         land$tburnt[land$cell.id %in% c(grass.cells, shrub.cells)] = 0
         land$sdm[land$cell.id %in% c(urban.cells, water.cells, grass.cells)] = NA
@@ -455,11 +455,6 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
         obs.lcc$code[obs.lcc$cell.id %in% water.cells] = 1919
         obs.lcc$code[obs.lcc$cell.id %in% grass.cells] = 1515
         obs.lcc$code[obs.lcc$cell.id %in% shrub.cells] = 1414
-        
-        if(any(is.na(sqi.shrub$sqi)) | sqi.shrub$sqi==0){
-          write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
-          stop("Error SQI shrub")
-        }
         # Update interface values
         land$interface = interface(land)
       }
@@ -520,10 +515,6 @@ land.dyn.mdl = function(is.land.cover.change = FALSE, is.harvest = FALSE, is.wil
                                        ifelse(sqest.maquia>=sqest.brolla & sqest.maquia>=sqest.boix, 2,
                                               ifelse(sqest.boix>=sqest.brolla & sqest.boix>=sqest.maquia, 3, 0))))
         land$sqi[land$cell.id %in% chg.cells] = sqi.shrub$sqi
-        if(is.na(sqi.shrub$sqi) | sqi.shrub$sqi==0){
-          write.table(sqi.shrub, paste0(out.path, "/ErrorSQIshrub.txt"), quote=F, row.names=F, sep="\t")
-          stop("Error SQI shrub")
-        }
         # Update interface values
         land$interface = interface(land)
       }
