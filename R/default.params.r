@@ -1,6 +1,6 @@
 #' Default model parameters
 #'
-#' Returns a list with the Quebec Landscape Dynamic Model parameters and the default values
+#' Returns a list with the medLDM - Mediterranean Landscape Dynamic Model parameters and the default values
 #'
 #' @return A list with the following items:
 #'  \itemize{
